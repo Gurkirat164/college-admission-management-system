@@ -1,0 +1,263 @@
+{
+  "machine": {
+    "platform": "Windows-10-10.0.19045-SP0",
+    "cpu": "Intel64 Family 6 Model 158 Stepping 10, GenuineIntel",
+    "logical_cpus": 8
+  },
+  "seed": 42,
+  "postgresql_version": "16.15",
+  "dataset": {
+    "student": 20000,
+    "choice": 240000,
+    "program": 30,
+    "seat_matrix": 150
+  },
+  "allocation": {
+    "samples": [
+      {
+        "checks": {
+          "capacity": "PASS",
+          "phase_ms": {
+            "solve": 13800,
+            "verify_and_persist": 21003,
+            "snapshot_and_scenario": 8449
+          },
+          "stability": "PASS",
+          "iterations": 36,
+          "monotonicity": "NOT_APPLICABLE",
+          "blocking_pairs": 0
+        },
+        "summary": {
+          "changes": {},
+          "assigned": 9244,
+          "applicants": 20000
+        },
+        "duration_ms": 43251,
+        "sim_id": 1,
+        "wall_ms": 43620.87,
+        "retries": 0,
+        "total_wall_ms": 43620.91
+      },
+      {
+        "checks": {
+          "capacity": "PASS",
+          "phase_ms": {
+            "solve": 14620,
+            "verify_and_persist": 22055,
+            "snapshot_and_scenario": 3251
+          },
+          "stability": "PASS",
+          "iterations": 36,
+          "monotonicity": "PASS",
+          "blocking_pairs": 0
+        },
+        "summary": {
+          "changes": {
+            "UNCHANGED": 9244
+          },
+          "assigned": 9244,
+          "applicants": 20000
+        },
+        "duration_ms": 39926,
+        "sim_id": 2,
+        "wall_ms": 40066.31,
+        "retries": 0,
+        "total_wall_ms": 40066.36
+      },
+      {
+        "checks": {
+          "capacity": "PASS",
+          "phase_ms": {
+            "solve": 13774,
+            "verify_and_persist": 21071,
+            "snapshot_and_scenario": 3461
+          },
+          "stability": "PASS",
+          "iterations": 36,
+          "monotonicity": "PASS",
+          "blocking_pairs": 0
+        },
+        "summary": {
+          "changes": {
+            "UNCHANGED": 9244
+          },
+          "assigned": 9244,
+          "applicants": 20000
+        },
+        "duration_ms": 38306,
+        "sim_id": 3,
+        "wall_ms": 38489.63,
+        "retries": 0,
+        "total_wall_ms": 38489.68
+      },
+      {
+        "checks": {
+          "capacity": "PASS",
+          "phase_ms": {
+            "solve": 12245,
+            "verify_and_persist": 18823,
+            "snapshot_and_scenario": 2807
+          },
+          "stability": "PASS",
+          "iterations": 36,
+          "monotonicity": "PASS",
+          "blocking_pairs": 0
+        },
+        "summary": {
+          "changes": {
+            "UNCHANGED": 9244
+          },
+          "assigned": 9244,
+          "applicants": 20000
+        },
+        "duration_ms": 33875,
+        "sim_id": 4,
+        "wall_ms": 34118.82,
+        "retries": 0,
+        "total_wall_ms": 34118.87
+      },
+      {
+        "checks": {
+          "capacity": "PASS",
+          "phase_ms": {
+            "solve": 14877,
+            "verify_and_persist": 19874,
+            "snapshot_and_scenario": 2681
+          },
+          "stability": "PASS",
+          "iterations": 36,
+          "monotonicity": "PASS",
+          "blocking_pairs": 0
+        },
+        "summary": {
+          "changes": {
+            "UNCHANGED": 9244
+          },
+          "assigned": 9244,
+          "applicants": 20000
+        },
+        "duration_ms": 37432,
+        "sim_id": 5,
+        "wall_ms": 37632.85,
+        "retries": 0,
+        "total_wall_ms": 37632.89
+      }
+    ],
+    "p50_ms": 38306,
+    "p95_ms": 43251,
+    "p95_method": "nearest-rank, five samples",
+    "target_under_5000_ms": false
+  },
+  "concurrent_analysts": {
+    "runs": [
+      {
+        "checks": {
+          "capacity": "PASS",
+          "phase_ms": {
+            "solve": 13373,
+            "verify_and_persist": 20462,
+            "snapshot_and_scenario": 2529
+          },
+          "stability": "PASS",
+          "iterations": 36,
+          "monotonicity": "PASS",
+          "blocking_pairs": 0
+        },
+        "summary": {
+          "changes": {
+            "UNCHANGED": 9244
+          },
+          "assigned": 9244,
+          "applicants": 20000
+        },
+        "duration_ms": 36364,
+        "sim_id": 9,
+        "wall_ms": 36576.36,
+        "retries": 1,
+        "total_wall_ms": 80330.98
+      },
+      {
+        "checks": {
+          "capacity": "PASS",
+          "phase_ms": {
+            "solve": 13881,
+            "verify_and_persist": 19446,
+            "snapshot_and_scenario": 2806
+          },
+          "stability": "PASS",
+          "iterations": 36,
+          "monotonicity": "PASS",
+          "blocking_pairs": 0
+        },
+        "summary": {
+          "changes": {
+            "UNCHANGED": 9244
+          },
+          "assigned": 9244,
+          "applicants": 20000
+        },
+        "duration_ms": 36134,
+        "sim_id": 11,
+        "wall_ms": 36457.27,
+        "retries": 2,
+        "total_wall_ms": 117244.29
+      },
+      {
+        "checks": {
+          "capacity": "PASS",
+          "phase_ms": {
+            "solve": 10338,
+            "verify_and_persist": 30261,
+            "snapshot_and_scenario": 2739
+          },
+          "stability": "PASS",
+          "iterations": 36,
+          "monotonicity": "PASS",
+          "blocking_pairs": 0
+        },
+        "summary": {
+          "changes": {
+            "UNCHANGED": 9244
+          },
+          "assigned": 9244,
+          "applicants": 20000
+        },
+        "duration_ms": 43338,
+        "sim_id": 6,
+        "wall_ms": 43612.5,
+        "retries": 0,
+        "total_wall_ms": 43612.53
+      }
+    ],
+    "student_http_samples": 922,
+    "student_http_p50_ms": 21.835,
+    "student_http_max_ms": 254.81
+  },
+  "spot": {
+    "attempts": 500,
+    "concurrent_clients": 50,
+    "outcomes": {
+      "ACCEPTED": 1,
+      "SEAT_UNAVAILABLE": 499,
+      "FAILED": 0
+    },
+    "seats_left": 0,
+    "acceptances": 1,
+    "holdings": 1,
+    "retries": 0,
+    "duration_ms": 11410.67,
+    "unsafe_demo": {
+      "clients": 50,
+      "overbooked_acceptances": 50,
+      "capacity": 1,
+      "scope": "disposable verification table only"
+    }
+  },
+  "property_tests": {
+    "scenarios": 100,
+    "students_per_scenario": 300,
+    "seed": 42,
+    "violations": 0,
+    "p50_ms": 4743.5
+  }
+}

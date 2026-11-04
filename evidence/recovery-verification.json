@@ -1,0 +1,14 @@
+{
+  "backup_created": true,
+  "dump_sha256": "754a4b390a5e977316e41b2d7cfde92cb270e0449f146132b08270aea486dfb7",
+  "document_count": 1,
+  "table_count": 31,
+  "server_version": "16.15",
+  "backup_directory": ".local\\backups\\20261104T115559Z-d64200",
+  "restore_checked": true,
+  "all_table_hashes_match": true,
+  "all_document_hashes_match": true,
+  "ledger_checkpoint_matches": true,
+  "runtime_permissions_verified": true,
+  "restore_target": "new disposable database, dropped after verification"
+}

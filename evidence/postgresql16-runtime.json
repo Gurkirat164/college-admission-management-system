@@ -1,0 +1,7 @@
+{
+  "version": "16.15",
+  "source": "https://get.enterprisedb.com/postgresql/postgresql-16.15-5-windows-x64-binaries.zip",
+  "download_sha256": "43bb45f173a6f08cf1d29a97a6d8deb119e8e8093a24c00d2d1001a0ccaa8281",
+  "host": "127.0.0.1",
+  "port": 55433
+}

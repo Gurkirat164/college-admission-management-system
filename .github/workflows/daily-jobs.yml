@@ -1,0 +1,22 @@
+name: Scheduled admission jobs
+on:
+  schedule:
+    - cron: '30 20 * * *'
+  workflow_dispatch:
+permissions: {}
+concurrency:
+  group: admission-daily-jobs
+  cancel-in-progress: false
+jobs:
+  daily:
+    if: vars.ADMISSION_API_ORIGIN != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Run idempotent mock and maintenance jobs (02:00 India time)
+        env:
+          API_ORIGIN: ${{ vars.ADMISSION_API_ORIGIN }}
+          JOB_TOKEN: ${{ secrets.ADMISSION_JOB_TOKEN }}
+        run: |
+          curl --fail-with-body --silent --show-error --retry 4 --retry-delay 15 --retry-all-errors --max-time 180 \
+            -H "Authorization: Bearer $JOB_TOKEN" -X POST "$API_ORIGIN/internal/jobs/daily"

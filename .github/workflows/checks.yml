@@ -1,0 +1,38 @@
+name: Project checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: admission_owner
+          POSTGRES_PASSWORD: ci-synthetic-owner-only
+        ports: ["55432:5432"]
+        options: --health-cmd "pg_isready -U admission_owner" --health-interval 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://admission_app:ci-synthetic-app-only@127.0.0.1:55432/postgres
+      MIGRATION_DATABASE_URL: postgresql://admission_owner:ci-synthetic-owner-only@127.0.0.1:55432/postgres
+      APP_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 24, cache: npm}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: npm ci
+      - run: npm run build && npm run test:ui && npm run test:proxy
+      - run: pip install -r backend/requirements.lock.txt -e './backend[dev]'
+      - name: Prepare isolated test role and client tools
+        run: |
+          python - <<'PY'
+          import json,os,pathlib,psycopg,shutil
+          with psycopg.connect(os.environ['MIGRATION_DATABASE_URL'],autocommit=True) as c:
+              c.execute("CREATE ROLE admission_app LOGIN PASSWORD 'ci-synthetic-app-only' NOSUPERUSER NOCREATEDB NOCREATEROLE")
+          pathlib.Path('.local').mkdir(exist_ok=True)
+          pathlib.Path('.local/local.json').write_text(json.dumps({'pgBin':str(pathlib.Path(shutil.which('pg_dump')).parent)}))
+          PY
+      - run: python -m pytest backend/tests -q --tb=short

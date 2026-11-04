@@ -1,0 +1,28 @@
+{
+  "name": "college-admission-system",
+  "private": true,
+  "type": "module",
+  "version": "0.1.0",
+  "workspaces": ["frontend"],
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "dev": "node scripts/dev.mjs",
+    "stop": "node scripts/local-db.mjs stop",
+    "db:start": "node scripts/local-db.mjs start",
+    "db:migrate": "node scripts/python.mjs -m app.cli migrate",
+    "db:seed": "node scripts/python.mjs -m app.cli seed",
+    "test": "node scripts/python.mjs -m pytest tests -q",
+    "test:ui": "npm run test --workspace frontend",
+    "test:proxy": "node --test tests/proxy.test.mjs",
+    "build": "npm run build --workspace frontend",
+    "jobs:once": "node scripts/python.mjs -m app.jobs.worker",
+    "backup:verify": "node scripts/python.mjs -m app.recovery --restore-check",
+    "demo:new": "node scripts/python.mjs -m app.demo",
+    "schema:export": "node scripts/python.mjs -m app.documentation",
+    "verify:pg16": "node scripts/verify-pg16.mjs",
+    "verify:scale": "node scripts/verify-pg16.mjs benchmark",
+    "test:e2e": "playwright test",
+    "check": "npm run build && npm run test:ui && npm test"
+  },
+  "engines": { "node": ">=20" }
+}

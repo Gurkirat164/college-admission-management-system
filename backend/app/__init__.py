@@ -1,0 +1,1 @@
+"""Local College Admission API."""

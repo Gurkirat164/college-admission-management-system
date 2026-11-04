@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: admission-api
+    runtime: python
+    region: singapore
+    plan: free
+    buildCommand: pip install -r backend/requirements.s3.lock.txt && pip install './backend[s3]'
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/ready
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: COOKIE_SECURE
+        value: 'true'
+      - key: STORAGE_BACKEND
+        value: s3
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        value: ap-southeast-1
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: PROXY_SECRET
+        sync: false
+      - key: JOB_TOKEN
+        sync: false
+      - key: SCHEDULER_USER_ID
+        sync: false

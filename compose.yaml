@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: admission
+      POSTGRES_USER: admission_owner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD before starting Docker}
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - admission_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admission_owner -d admission"]
+      interval: 5s
+      retries: 10
+volumes:
+  admission_pgdata:

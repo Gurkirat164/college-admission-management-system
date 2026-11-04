@@ -1,0 +1,4 @@
+student_id,dob,maths,physics,chemistry,category
+1,2007-01-02,99.00,98.00,97.00,OBC_NCL
+2,2007-01-03,98.00,97.00,96.00,OPEN
+3,2007-01-04,97.00,96.00,95.00,OBC_NCL
