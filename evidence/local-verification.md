@@ -22,7 +22,7 @@ The deliberately unsafe demonstration accepted 50 requests for one place in a di
 
 Integration tests create/drop only their own `admission_test_<random>` databases. Coverage includes roles, CSRF, choices, replay, rollback, publication/idempotency, multi-round responses, rank imports, document verification/privacy, jobs, predictor freshness, retention, final confirmation, audit, storage and restore. Browser checks exercise student choices, admin/analyst simulations, advanced controls/CSV/pinning, mock outcomes, imports/round-settings/admission screens and auditor events. They do not lock/publish the main demo round.
 
-`backend-pg16.xml` and `backend-pg18.xml` record the baseline, before the final deployment-boundary additions; those have separate focused tests. One Starlette HTTPX TestClient deprecation warning remains. Hallmark's Puppeteer rendering tier was unavailable; real Chrome/Playwright supplied workflows, screenshots and viewport measurements.
+`backend-pg16.xml` and `backend-pg18.xml` record the baseline, before the final deployment-boundary additions; those have separate focused tests. The final Linux/GitHub PostgreSQL 16 run passed all 40 tests, six frontend tests and two proxy tests; the hosted checks are recorded in `deployment-verification.json`. One Starlette HTTPX TestClient deprecation warning remains. Hallmark's Puppeteer rendering tier was unavailable; real Chrome/Playwright supplied workflows, screenshots and viewport measurements.
 
 ## Reproduce
 

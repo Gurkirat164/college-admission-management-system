@@ -1,0 +1,68 @@
+{
+  "verified_at": "2026-11-04T15:43:07.011515+00:00",
+  "frontend": "https://college-admission-164.pages.dev",
+  "backend": "https://college-admission-api-164.onrender.com",
+  "checks": {
+    "frontend_html": "PASS",
+    "proxy_database_readiness": "PASS",
+    "production_demo_accounts_hidden": "PASS",
+    "anonymous_workspace_denied": "PASS",
+    "direct_backend_bypass_denied": "PASS",
+    "scheduler_without_token_denied": "PASS",
+    "login_diya@example.com": "PASS",
+    "workspace_diya@example.com": "PASS",
+    "secure_same_origin_cookies": "PASS",
+    "csrf_required": "PASS",
+    "cross_origin_denied": "PASS",
+    "student_admin_access_denied": "PASS",
+    "student_prediction_and_mock": "PASS",
+    "private_document_upload": "PASS",
+    "private_document_download": "PASS",
+    "anonymous_document_denied": "PASS",
+    "login_kunal@example.com": "PASS",
+    "workspace_kunal@example.com": "PASS",
+    "other_student_document_denied": "PASS",
+    "login_ADMIN": "PASS",
+    "workspace_ADMIN": "PASS",
+    "admin_dashboard_and_jobs": "PASS",
+    "login_ANALYST": "PASS",
+    "workspace_ANALYST": "PASS",
+    "analyst_postgres_allocation": "PASS",
+    "masked_csv_export": "PASS",
+    "login_AUDITOR": "PASS",
+    "workspace_AUDITOR": "PASS",
+    "hosted_ledger_integrity": "PASS"
+  },
+  "document_sha256": "a59d6e134488502a542c502f47ce89749aa701649a88b09ba0929b8d4fac0961",
+  "repository": "https://github.com/Gurkirat164/college-admission-management-system",
+  "source_upload": "Git CLI commit and push; hosting services connected to GitHub",
+  "neon": {
+    "project": "twilight-sound-37433215",
+    "region": "aws-ap-southeast-1",
+    "postgresql_major": 16,
+    "production_branch": "main",
+    "private_bucket": "admission-documents",
+    "migrations": 18,
+    "setup_branch_checked": true
+  },
+  "github_checks": {
+    "status": "PASS",
+    "backend_tests": 40,
+    "frontend_tests": 6,
+    "proxy_tests": 2,
+    "run": "https://github.com/Gurkirat164/college-admission-management-system/actions/runs/41860507900"
+  },
+  "scheduled_job": {
+    "status": "PASS",
+    "run": "https://github.com/Gurkirat164/college-admission-management-system/actions/runs/41829937978",
+    "mock": "SUCCEEDED",
+    "maintenance": "SUCCEEDED",
+    "schedule": "02:00 Asia/Kolkata; best-effort"
+  },
+  "browser": {
+    "latest_student_workspace": "PASS",
+    "browser_errors": 0,
+    "viewport_px": 1280,
+    "document_width_px": 1270
+  }
+}

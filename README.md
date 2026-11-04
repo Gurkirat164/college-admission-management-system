@@ -2,6 +2,8 @@
 
 React renders the student and staff workbench, Python/FastAPI manages authentication and private documents, and PostgreSQL executes admission rules. Both original plan documents are preserved.
 
+Hosted college demo: <https://college-admission-164.pages.dev>. Source is pushed with Git CLI; Render and Pages deploy from the connected repository. Neon hosts PostgreSQL and private documents. Hosted sign-in credentials are shared privately, never through the public application.
+
 ## Run locally on Windows
 
 Requirements: Node.js 20.19+ (or 22.12+), Python 3.11+ and PostgreSQL binaries. Setup detects installed PostgreSQL 16/18 and bundled Python; `PG_BIN` and `ADMISSION_PYTHON` override detection.

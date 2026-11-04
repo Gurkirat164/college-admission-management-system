@@ -31,3 +31,10 @@ New PostgreSQL 16 project in AWS Singapore. Verify migrations on an isolated bra
 GitHub Actions calls `/internal/jobs/daily` at 02:00 India time using repository secret `ADMISSION_JOB_TOKEN` and variable `ADMISSION_API_ORIGIN`. The dedicated token guards the endpoint and schedule slots are idempotent. Free scheduling can be delayed; manual dispatch supports catch-up without a paid Render cron service.
 
 Cloud secrets/account credentials stay under ignored `.local/deployment/`; local `backend/.env` is preserved. Rotate proxy values in both Pages/Render and job tokens in both GitHub/Render. Review staged files for credentials before pushing.
+
+
+## Verified hosted behavior
+
+The default Pages domain passed real sign-in for student/admin/analyst/auditor roles, Secure same-origin session/CSRF cookies, private document upload/download, denial of anonymous/other-student document access, role/CSRF/Origin guards, masked CSV export, a PostgreSQL allocation and ledger verification. Direct API bypass and unauthenticated scheduling were rejected. The browser loaded the updated student workspace without errors or horizontal overflow.
+
+GitHub verification passed 40 PostgreSQL/API tests, six frontend tests, two proxy tests and the production build. A manual execution of the scheduled workflow completed both nightly mock and maintenance jobs. Scheduling remains best-effort on free services. The measured large-data five-second target is still unmet as documented in local evidence. See `evidence/deployment-verification.json` for dated results and run links.
