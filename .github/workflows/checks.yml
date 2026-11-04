@@ -26,13 +26,15 @@ jobs:
       - run: npm ci
       - run: npm run build && npm run test:ui && npm run test:proxy
       - run: pip install -r backend/requirements.lock.txt -e './backend[dev]'
+      - name: Install matching PostgreSQL 16 backup tools
+        run: sudo apt-get update -qq && sudo apt-get install -y postgresql-client-16
       - name: Prepare isolated test role and client tools
         run: |
           python - <<'PY'
-          import json,os,pathlib,psycopg,shutil
+          import json,os,pathlib,psycopg
           with psycopg.connect(os.environ['MIGRATION_DATABASE_URL'],autocommit=True) as c:
               c.execute("CREATE ROLE admission_app LOGIN PASSWORD 'ci-synthetic-app-only' NOSUPERUSER NOCREATEDB NOCREATEROLE")
           pathlib.Path('.local').mkdir(exist_ok=True)
-          pathlib.Path('.local/local.json').write_text(json.dumps({'pgBin':str(pathlib.Path(shutil.which('pg_dump')).parent)}))
+          pathlib.Path('.local/local.json').write_text(json.dumps({'pgBin':'/usr/lib/postgresql/16/bin'}))
           PY
       - run: python -m pytest backend/tests -q --tb=short
