@@ -60,13 +60,13 @@ def database_error(request, exc):
         status, message = 409, "Another operation changed these records. Refresh and try again."
     else:
         logging.getLogger("admission").error("Database operation failed with SQLSTATE %s", code)
-        status, message = 503, "Database request could not complete. Try again or check the local server."
+        status, message = 503, "Database request could not complete. Please try again shortly."
     return JSONResponse({"detail": message}, status_code=status)
 
 
 @app.exception_handler(PoolTimeout)
 def database_timeout(request, exc):
-    return JSONResponse({"detail": "Database is not ready. Start the local database and try again."}, status_code=503)
+    return JSONResponse({"detail": "The admission database is starting. Please try again shortly."}, status_code=503)
 
 
 @app.get("/api/v1/health")

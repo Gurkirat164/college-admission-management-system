@@ -23,9 +23,9 @@ describe('API request boundary',()=>{
   vi.stubGlobal('fetch',vi.fn().mockResolvedValue(new Response(JSON.stringify({detail:'Choices are locked'}),{status:409})));
   await expect(api('/me/choices/2026')).rejects.toMatchObject({message:'Choices are locked',status:409});
  });
- it('explains an unavailable local API',async()=>{
+ it('explains an unavailable admission service',async()=>{
   vi.stubGlobal('fetch',vi.fn().mockRejectedValue(new TypeError('network failed')));
-  await expect(api('/workspace')).rejects.toThrow('The local API is unavailable');
+  await expect(api('/workspace')).rejects.toThrow('The admission service is unavailable or starting');
  });
  it('does not render arbitrary error objects as messages',()=>expect(errorMessage({password:'private'})).toBe('Request failed. Please try again.'));
  it('renders database status codes in readable form',()=>expect(friendly('REJECTED_FULL')).toBe('Rejected full'));

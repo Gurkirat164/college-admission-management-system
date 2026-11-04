@@ -7,7 +7,7 @@ export async function api<T>(path:string, options:RequestInit={}):Promise<T> {
   if (options.method && options.method!=='GET') headers.set('X-CSRF-Token',csrfToken());
   let response:Response;
   try {response=await fetch(`${import.meta.env.VITE_API_BASE ?? '/api/v1'}${path}`,{...options,headers,credentials:'same-origin'});}
-  catch {throw new Error('The local API is unavailable. Start the backend, then try again.');}
+  catch {throw new Error('The admission service is unavailable or starting. Please try again shortly.');}
   const value=await response.json().catch(()=>null);
   if (!response.ok) {
     const error=new Error(typeof value?.detail==='string'?value.detail:response.status===401?'Sign in to continue.':'The request could not complete. Check your input and try again.');
