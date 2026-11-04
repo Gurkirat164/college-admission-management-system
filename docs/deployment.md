@@ -1,6 +1,16 @@
 # Deployment configuration
 
-GitHub is the source for Git-connected Render and Cloudflare Pages. Use default `onrender.com` and `pages.dev` domains. Resource URLs and verification status are recorded here after provisioning.
+GitHub is the source for Git-connected Render and Cloudflare Pages. Use default `onrender.com` and `pages.dev` domains. Resources created on 4 November 2026:
+
+| Component | Resource |
+|---|---|
+| GitHub source (private; pushed using Git CLI) | https://github.com/Gurkirat164/college-admission-management-system |
+| Frontend | https://college-admission-164.pages.dev |
+| Backend readiness | https://college-admission-api-164.onrender.com/api/v1/ready |
+| Neon project | `college-admission-management-system` / `twilight-sound-37433215` |
+| Neon production branch / private bucket | `main` / `admission-documents` |
+
+Migrations and synthetic seed were checked on the expiring `deployment-check` branch before main. Both branches passed the cloud solver checks and denied runtime base-table reads. Private S3 write/read/delete was verified. Hosted account credentials are saved only in ignored `.local/deployment/demo-credentials.txt`; the production development-account endpoint stays disabled. No custom domain or paid service was configured.
 
 ## Cloudflare Pages
 
