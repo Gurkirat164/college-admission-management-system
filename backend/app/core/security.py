@@ -1,7 +1,5 @@
 import hashlib
 import hmac
-import time
-from collections import defaultdict, deque
 
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError
@@ -12,7 +10,6 @@ from app.db import transaction
 
 passwords = PasswordHasher()
 dummy_hash = passwords.hash("unused-timing-placeholder")
-attempts: dict[str, deque] = defaultdict(deque)
 
 
 def digest(value: str) -> str:
@@ -30,15 +27,11 @@ def rate_limit(request: Request, email: str = ""):
     key = request.client.host if request.client else "local"
     if settings.proxy_secret and hmac.compare_digest(request.headers.get('x-admission-proxy', ''), settings.proxy_secret):
         key = request.headers.get('x-forwarded-for', key)
-    now = time.monotonic()
-    queue = attempts[key]
-    while queue and queue[0] < now - 60:
-        queue.popleft()
+    # Limits are counted in PostgreSQL (login_attempt), so they hold across API restarts and instances.
     with transaction() as conn:
         allowed = conn.execute("SELECT admission.record_login_attempt(%s,%s) AS value", (digest(key), digest(email.strip().lower()))).fetchone()["value"]
     if not allowed:
         raise HTTPException(429, "Too many login attempts. Try again in a minute.")
-    queue.append(now)
 
 
 def identity(request: Request):
