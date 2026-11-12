@@ -19,6 +19,7 @@
     "backup:verify": "node scripts/python.mjs -m app.recovery --restore-check",
     "demo:new": "node scripts/python.mjs -m app.demo",
     "schema:export": "node scripts/python.mjs -m app.documentation",
+    "docs:er": "node scripts/python.mjs -m app.er_diagram",
     "verify:pg16": "node scripts/verify-pg16.mjs",
     "verify:scale": "node scripts/verify-pg16.mjs benchmark",
     "test:e2e": "playwright test",
