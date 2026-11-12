@@ -1,8 +1,108 @@
-import {Empty,Status,Table,type Actions} from '../../components/ui';
-import {useData} from '../../lib/useData';
-import type {Chance,Freshness} from '../../lib/types';
-interface Dashboard {bands:Chance[];freshness:Freshness|null;choice_count:number;has_safe_choice:boolean;round_drift:{program_id:number;seat_category:string;drift_percent:number|null}[];mock:null|{sim_id:number;captured_at:string;stale:boolean;outcome:string;allocation:null|{program:string;institute:string;pref_order:number;seat_category:string}}}
-export default function MockForecast({workspace:w}:Pick<Actions,'workspace'>) {
- const {data,error,loading,reload}=useData<Dashboard>(`/me/predictor/${w.year}`,w);
- return <>{error&&<div role="alert" className="error">{error}<button className="quiet" onClick={reload}>Try again</button></div>}{loading?<p role="status">Loading your mock forecast…</p>:data&&<><section><h2>Latest mock allotment</h2>{data.mock?<div className="allocation-letter"><div><h3>{data.mock.allocation?`${data.mock.allocation.program} / ${data.mock.allocation.institute}`:'No seat in this mock run'}</h3><p>{data.mock.allocation?`Preference ${data.mock.allocation.pref_order}, ${data.mock.allocation.seat_category.replaceAll('_',' ')}`:data.mock.outcome.toLowerCase()}</p><p className="small muted">Inputs from {new Date(data.mock.captured_at).toLocaleString()} / run #{data.mock.sim_id}</p><p>{data.mock.stale?'Admission inputs changed after this mock. Wait for the next run.':'This run matches the current input revision.'}</p></div><Status value={data.mock.stale?'STALE':'CURRENT'}/></div>:<Empty>No mock result yet. Results appear after the nightly run or an admin starts a mock allotment.</Empty>}</section><section><h2>Preference-list guidance</h2><p className="muted">{data.choice_count} choices recorded. {data.has_safe_choice?'Your list includes a historically safe option.':'Consider adding an eligible option with a safer historical band.'} Keep your genuine preference order.</p><p className="small muted">{data.freshness?.refreshed_at?`Prediction refresh: ${new Date(data.freshness.refreshed_at).toLocaleString()}`:'Predictions have not refreshed yet.'} / {data.freshness?.rules_version??'historic-bands-v1'} / {data.freshness?.stale?'stale':'current'}</p></section><details><summary>Historical movement between rounds</summary><Table rows={data.round_drift} label="Historical round drift" columns={[{label:'Program',render:r=>w.programs.find(p=>p.program_id===r.program_id)?.code??r.program_id},{label:'Pool',render:r=>r.seat_category.replaceAll('_',' ')},{label:'Average closing-rank change',render:r=>r.drift_percent===null?'Insufficient data':`${r.drift_percent}%`}]} /></details></>}</>;
+import { Empty, Status, Table, type Actions } from '../../components/ui';
+import { useData } from '../../lib/useData';
+import type { Chance, Freshness } from '../../lib/types';
+interface Dashboard {
+  bands: Chance[];
+  freshness: Freshness | null;
+  choice_count: number;
+  has_safe_choice: boolean;
+  round_drift: { program_id: number; seat_category: string; drift_percent: number | null }[];
+  mock: null | {
+    sim_id: number;
+    captured_at: string;
+    stale: boolean;
+    outcome: string;
+    allocation: null | { program: string; institute: string; pref_order: number; seat_category: string };
+  };
+}
+export default function MockForecast({ workspace: w }: Pick<Actions, 'workspace'>) {
+  const { data, error, loading, reload } = useData<Dashboard>(`/me/predictor/${w.year}`, w);
+  return (
+    <>
+      {error && (
+        <div role="alert" className="error">
+          {error}
+          <button className="quiet" onClick={reload}>
+            Try again
+          </button>
+        </div>
+      )}
+      {loading ? (
+        <p role="status">Loading your mock forecast…</p>
+      ) : (
+        data && (
+          <>
+            <section>
+              <h2>Latest mock allotment</h2>
+              {data.mock ? (
+                <div className="allocation-letter">
+                  <div>
+                    <h3>
+                      {data.mock.allocation
+                        ? `${data.mock.allocation.program} / ${data.mock.allocation.institute}`
+                        : 'No seat in this mock run'}
+                    </h3>
+                    <p>
+                      {data.mock.allocation
+                        ? `Preference ${data.mock.allocation.pref_order}, ${data.mock.allocation.seat_category.replaceAll('_', ' ')}`
+                        : data.mock.outcome.toLowerCase()}
+                    </p>
+                    <p className="small muted">
+                      Inputs from {new Date(data.mock.captured_at).toLocaleString()} / run #{data.mock.sim_id}
+                    </p>
+                    <p>
+                      {data.mock.stale
+                        ? 'Admission inputs changed after this mock. Wait for the next run.'
+                        : 'This run matches the current input revision.'}
+                    </p>
+                  </div>
+                  <Status value={data.mock.stale ? 'STALE' : 'CURRENT'} />
+                </div>
+              ) : (
+                <Empty>
+                  No mock result yet. Results appear after the nightly run or an admin starts a mock
+                  allotment.
+                </Empty>
+              )}
+            </section>
+            <section>
+              <h2>Preference-list guidance</h2>
+              <p className="muted">
+                {data.choice_count} choices recorded.{' '}
+                {data.has_safe_choice
+                  ? 'Your list includes a historically safe option.'
+                  : 'Consider adding an eligible option with a safer historical band.'}{' '}
+                Keep your genuine preference order.
+              </p>
+              <p className="small muted">
+                {data.freshness?.refreshed_at
+                  ? `Prediction refresh: ${new Date(data.freshness.refreshed_at).toLocaleString()}`
+                  : 'Predictions have not refreshed yet.'}{' '}
+                / {data.freshness?.rules_version ?? 'historic-bands-v1'} /{' '}
+                {data.freshness?.stale ? 'stale' : 'current'}
+              </p>
+            </section>
+            <details>
+              <summary>Historical movement between rounds</summary>
+              <Table
+                rows={data.round_drift}
+                label="Historical round drift"
+                columns={[
+                  {
+                    label: 'Program',
+                    render: r => w.programs.find(p => p.program_id === r.program_id)?.code ?? r.program_id,
+                  },
+                  { label: 'Pool', render: r => r.seat_category.replaceAll('_', ' ') },
+                  {
+                    label: 'Average closing-rank change',
+                    render: r => (r.drift_percent === null ? 'Insufficient data' : `${r.drift_percent}%`),
+                  },
+                ]}
+              />
+            </details>
+          </>
+        )
+      )}
+    </>
+  );
 }
