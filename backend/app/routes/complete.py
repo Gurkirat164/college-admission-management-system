@@ -80,6 +80,11 @@ def dashboard(year: int, user=Depends(identity)):
     return call('admin_dashboard', (year,), user)
 
 
+@router.get('/admin/overview/{year}')
+def overview(year: int, user=Depends(identity)):
+    return call('admin_overview', (year,), user)
+
+
 @router.post('/admin/jobs/{year}/mock')
 def mock(year: int, user=Depends(identity)):
     require_admin(user)
