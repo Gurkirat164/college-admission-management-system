@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import MockForecast from './MockForecast';
-import { api, errorMessage } from '../../lib/api';
+import { api, errorMessage, categoryLabel } from '../../lib/api';
 import { Status, Table, type Actions } from '../../components/ui';
 import type { Chance } from '../../lib/types';
 export default function Predictor({ workspace: w }: Actions) {
@@ -16,8 +16,7 @@ export default function Predictor({ workspace: w }: Actions) {
   return (
     <>
       <header className="page-heading">
-        <h1>Know the range. Choose freely.</h1>
-        <p>Historical cutoff bands help you explore your options.</p>
+        <h1>Your chances</h1>
       </header>
       <MockForecast workspace={w} />
       <div className="notice">
@@ -44,7 +43,7 @@ export default function Predictor({ workspace: w }: Actions) {
                 </>
               ),
             },
-            { label: 'Pool', render: r => r.seat_category.replaceAll('_', ' ') },
+            { label: 'Pool', render: r => categoryLabel(r.seat_category) },
             { label: 'Your rank', render: r => r.your_rank },
             { label: 'Projected close', render: r => r.projected_close },
             {

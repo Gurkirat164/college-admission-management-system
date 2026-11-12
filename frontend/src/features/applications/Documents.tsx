@@ -14,8 +14,7 @@ export default function Documents({ workspace: w, busy, mutate }: Actions) {
   return (
     <>
       <header className="page-heading">
-        <h1>Your application, in one place.</h1>
-        <p>Submit exam documents and follow your verification status.</p>
+        <h1>Application</h1>
       </header>
       <section className="application-summary">
         <h2>{w.user.full_name}</h2>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { post, put } from '../../lib/api';
+import { post, put, categoryLabel } from '../../lib/api';
 import { Status, Table, type Actions } from '../../components/ui';
 export default function Applications({ workspace: w, busy, mutate }: Actions) {
   const [selected, setSelected] = useState<number | null>(null),
@@ -12,22 +12,21 @@ export default function Applications({ workspace: w, busy, mutate }: Actions) {
   return (
     <>
       <header className="page-heading">
-        <h1>Review the record before the rank.</h1>
-        <p>Verify documents, record exam results, and review eligibility.</p>
+        <h1>Applications</h1>
       </header>
       <Table
         rows={w.applications ?? []}
         label="Applications"
         columns={[
           { label: 'Student', render: a => a.full_name },
-          { label: 'Category', render: a => a.admission_category.replaceAll('_', ' ') },
+          { label: 'Category', render: a => categoryLabel(a.admission_category) },
           { label: 'Common rank', render: a => a.crl_rank ?? 'Not recorded' },
           { label: 'Status', render: a => <Status value={a.status} /> },
           {
             label: 'Review',
             render: a => (
               <button
-                className="quiet"
+                className="text-button"
                 onClick={() => {
                   setSelected(a.student_id);
                   setReason(a.review_reason ?? '');
@@ -134,7 +133,9 @@ export default function Applications({ workspace: w, busy, mutate }: Actions) {
               Category
               <select value={category} onChange={e => setCategory(e.target.value)}>
                 {['OPEN', 'EWS', 'OBC_NCL', 'SC', 'ST'].map(c => (
-                  <option key={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {categoryLabel(c)}
+                  </option>
                 ))}
               </select>
             </label>

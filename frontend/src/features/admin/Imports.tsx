@@ -32,8 +32,7 @@ export default function Imports({ workspace: w, busy, mutate }: Actions) {
   return (
     <>
       <header className="page-heading">
-        <h1>Import marks. Verify the order.</h1>
-        <p>Preview deterministic ranks before changing admission records.</p>
+        <h1>Imports</h1>
       </header>
       <section>
         <h2>Exam results</h2>

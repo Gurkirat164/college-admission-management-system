@@ -1,5 +1,5 @@
 import { useData } from '../../lib/useData';
-import { post } from '../../lib/api';
+import { post, categoryLabel } from '../../lib/api';
 import { Confirm, Status, Table, type Actions } from '../../components/ui';
 import type { AdminDashboard } from '../../lib/types';
 export default function Admissions({ workspace: w, busy, mutate }: Actions) {
@@ -7,8 +7,7 @@ export default function Admissions({ workspace: w, busy, mutate }: Actions) {
   return (
     <>
       <header className="page-heading">
-        <h1>Confirm the final place.</h1>
-        <p>Check each current holding before confirming admission.</p>
+        <h1>Final admissions</h1>
       </header>
       {error && (
         <p role="alert" className="error">
@@ -33,7 +32,7 @@ export default function Admissions({ workspace: w, busy, mutate }: Actions) {
                 </>
               ),
             },
-            { label: 'Pool', render: r => r.seat_category.replaceAll('_', ' ') },
+            { label: 'Pool', render: r => categoryLabel(r.seat_category) },
             { label: 'Source', render: r => r.source.toLowerCase() },
             {
               label: 'Confirmation',

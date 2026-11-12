@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { api, post, errorMessage } from '../../lib/api';
+import { api, post, errorMessage, categoryLabel } from '../../lib/api';
 import { Confirm, Table, type Actions } from '../../components/ui';
 import type { SpotPool } from '../../lib/types';
 export default function Spot({ workspace: w, busy, mutate }: Actions) {
@@ -15,8 +15,7 @@ export default function Spot({ workspace: w, busy, mutate }: Actions) {
   return (
     <>
       <header className="page-heading">
-        <h1>The remaining places.</h1>
-        <p>Eligible applicants without a current holding can accept an available seat.</p>
+        <h1>Spot round</h1>
       </header>
       {error && (
         <p role="alert" className="error">
@@ -66,7 +65,7 @@ export default function Spot({ workspace: w, busy, mutate }: Actions) {
               </>
             ),
           },
-          { label: 'Pool', render: p => p.seat_category.replaceAll('_', ' ') },
+          { label: 'Pool', render: p => categoryLabel(p.seat_category) },
           { label: 'Available', render: p => p.seats_left },
           {
             label: 'Action',

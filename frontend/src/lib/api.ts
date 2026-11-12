@@ -47,3 +47,14 @@ export function friendly(value: string) {
     .replaceAll('_', ' ')
     .replace(/^./, s => s.toUpperCase());
 }
+const CATEGORY_LABELS: Record<string, string> = {
+  OPEN: 'Open',
+  EWS: 'EWS',
+  OBC_NCL: 'OBC-NCL',
+  SC: 'SC',
+  ST: 'ST',
+};
+/** Seat and admission categories as people write them: Open, OBC-NCL, SC… */
+export function categoryLabel(value: string | null | undefined) {
+  return value ? (CATEGORY_LABELS[value] ?? value.replaceAll('_', ' ')) : '';
+}

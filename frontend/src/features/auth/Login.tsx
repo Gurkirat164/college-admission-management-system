@@ -1,5 +1,5 @@
+import ThemeSwitch from '../../components/ThemeSwitch';
 import { useEffect, useState, type FormEvent } from 'react';
-import { ArrowRight, BookOpen, ShieldCheck } from 'lucide-react';
 import { api, errorMessage, post } from '../../lib/api';
 import type { DemoAccount } from '../../lib/types';
 
@@ -35,28 +35,12 @@ export default function Login({ onLogin }: { onLogin: () => Promise<void> }) {
   }
   return (
     <main className="login-layout">
-      <section className="login-story">
-        <div className="wordmark">
-          <BookOpen size={25} />
-          Admission desk
-        </div>
-        <div>
-          <h1>A place for every decision.</h1>
-          <p>College admissions, with a clear reason behind every allocation.</p>
-          <div className="story-rule" />
-          <p className="muted">
-            <ShieldCheck size={18} /> Ranked choices. Fair allocation. A verifiable record.
-          </p>
-        </div>
-        <p className="small muted">College demo. Synthetic admission records.</p>
-      </section>
+      <div className="login-top">
+        <span className="wordmark">Admission desk</span>
+        <ThemeSwitch />
+      </div>
       <section className="login-form">
-        <h2>{register ? 'Create your student account' : 'Welcome to the desk'}</h2>
-        <p className="muted">
-          {register
-            ? 'Start with your name and sign-in details.'
-            : 'Sign in to continue your admission work.'}
-        </p>
+        <h1>{register ? 'Create a student account' : 'Sign in'}</h1>
         <form onSubmit={submit}>
           {register && (
             <label>
@@ -99,7 +83,6 @@ export default function Login({ onLogin }: { onLogin: () => Promise<void> }) {
           )}
           <button disabled={busy} aria-busy={busy}>
             {busy ? 'Signing in…' : register ? 'Create account' : 'Sign in'}
-            <ArrowRight size={17} />
           </button>
         </form>
         <button
@@ -113,8 +96,8 @@ export default function Login({ onLogin }: { onLogin: () => Promise<void> }) {
         </button>
         {accounts.length > 0 && !register && (
           <section className="demo-access">
-            <h3>Explore the local demo</h3>
-            <p className="small muted">Choose a synthetic account to fill the form.</p>
+            <h2>Demo accounts</h2>
+            <p className="small muted">Fills the form with a synthetic account.</p>
             <div className="demo-buttons">
               {accounts.map(a => (
                 <button
@@ -138,6 +121,7 @@ export default function Login({ onLogin }: { onLogin: () => Promise<void> }) {
           </section>
         )}
       </section>
+      <p className="login-footnote">College demo · synthetic admission records</p>
     </main>
   );
 }

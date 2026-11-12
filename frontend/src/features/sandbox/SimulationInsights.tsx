@@ -1,3 +1,4 @@
+import { categoryLabel } from '../../lib/api';
 import { ArrowRight } from 'lucide-react';
 import { Empty, Table } from '../../components/ui';
 import type { RunDetails } from '../../lib/types';
@@ -30,7 +31,7 @@ export default function SimulationInsights({
             {cutoffs.slice(0, 15).map((c, i) => (
               <g key={`${c.program_id}/${c.seat_category}`} transform={`translate(0 ${i * 38 + 20})`}>
                 <text x="0" y="6">
-                  {c.program} {c.seat_category.replaceAll('_', ' ')}
+                  {c.program} {categoryLabel(c.seat_category)}
                 </text>
                 <rect
                   className="before-bar"
@@ -60,7 +61,7 @@ export default function SimulationInsights({
                 </>
               ),
             },
-            { label: 'Pool', render: c => c.seat_category.replaceAll('_', ' ') },
+            { label: 'Pool', render: c => categoryLabel(c.seat_category) },
             { label: 'Before', render: c => c.before ?? 'Unfilled' },
             { label: 'After', render: c => c.after ?? 'Unfilled' },
             {
@@ -89,7 +90,7 @@ export default function SimulationInsights({
                     .filter(n => n.depth === depth)
                     .map(n => (
                       <button className="quiet" key={n.pool} onClick={() => onPoolSelect(n.pool)}>
-                        {n.program} / {n.category.replaceAll('_', ' ')}
+                        {n.program} / {categoryLabel(n.category)}
                         <small>{n.institute}</small>
                       </button>
                     ))}

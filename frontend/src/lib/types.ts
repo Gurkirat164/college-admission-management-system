@@ -194,3 +194,75 @@ export interface SpotPool {
   seats_left: number;
   status: string;
 }
+export interface OverviewPool {
+  program_id: number;
+  code: string;
+  institute: string;
+  seat_category: string;
+  seats: number;
+}
+export interface OverviewSeat {
+  program_id: number;
+  seat_category: string;
+  student_id: number;
+  student_name: string;
+  admission_category: string;
+  rank_used: number;
+  crl_rank: number | null;
+  cat_rank: number | null;
+  pref_order: number;
+  choice_count: number;
+}
+export interface OverviewUnplaced {
+  student_id: number;
+  student_name: string;
+  crl_rank: number | null;
+  outcome: string;
+  reason_code: string | null;
+}
+export interface OverviewEvent {
+  at: string;
+  kind: 'run' | 'job';
+  label: string;
+  sim_id: number | null;
+  by?: string;
+  assigned?: number;
+  applicants?: number;
+  passed?: boolean;
+  status?: string;
+}
+export interface OverviewData {
+  year: number;
+  choice_deadline: string;
+  choices_locked: boolean;
+  round: {
+    round_id: number;
+    round_no: number;
+    status: string;
+    response_deadline: string;
+    published_at: string | null;
+  } | null;
+  applicants: { total: number; by_status: Record<string, number>; by_category: Record<string, number> };
+  run: {
+    sim_id: number;
+    is_published: boolean;
+    started_at: string;
+    duration_ms: number;
+    inputs_changed: boolean;
+    checks: { stability?: string; capacity?: string; blocking_pairs?: number };
+  } | null;
+  demand: {
+    program_id: number;
+    code: string;
+    institute: string;
+    seats: number;
+    first_choice: number;
+    listed: number;
+  }[];
+  funnel: { applied: number; submitted: number; verified: number; ranked: number; chose: number };
+  runs: { sim_id: number; duration_ms: number; assigned: number | null; started_at: string }[];
+  pools: OverviewPool[];
+  seats: OverviewSeat[];
+  unplaced: OverviewUnplaced[];
+  recent: OverviewEvent[];
+}

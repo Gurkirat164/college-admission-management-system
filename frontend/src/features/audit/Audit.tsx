@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import AuditTimeline from './AuditTimeline';
-import { api } from '../../lib/api';
+import { api, categoryLabel } from '../../lib/api';
 import { Empty, Status, Table, type Actions } from '../../components/ui';
 interface Verification {
   valid: boolean;
@@ -22,8 +22,7 @@ export default function Audit({ workspace: w, busy, mutate }: Actions) {
   return (
     <>
       <header className="page-heading">
-        <h1>The record should explain itself.</h1>
-        <p>Verify the event chain and inspect historical seat capacity.</p>
+        <h1>Audit &amp; history</h1>
       </header>
       <section>
         <div className="section-heading">
@@ -88,7 +87,7 @@ export default function Audit({ workspace: w, busy, mutate }: Actions) {
             rows={history}
             columns={[
               { label: 'Program', render: h => h.program },
-              { label: 'Pool', render: h => h.seat_category.replaceAll('_', ' ') },
+              { label: 'Pool', render: h => categoryLabel(h.seat_category) },
               { label: 'Seats', render: h => h.seats },
             ]}
           />

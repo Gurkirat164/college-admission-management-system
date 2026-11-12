@@ -1,3 +1,4 @@
+import { categoryLabel } from '../../lib/api';
 import { Status } from '../../components/ui';
 import { useData } from '../../lib/useData';
 import type { Holding, Workspace } from '../../lib/types';
@@ -14,7 +15,7 @@ export default function HoldingInfo({ workspace: w }: { workspace: Workspace }) 
     <section className="holding-summary">
       <h2>Current seat holding</h2>
       <p>
-        {data.program} / {data.institute} / {data.seat_category.replaceAll('_', ' ')}
+        {data.program} / {data.institute} / {categoryLabel(data.seat_category)}
       </p>
       <p className="small muted">Acquired through {data.source.toLowerCase()} allocation.</p>
       <Status value={data.final ? 'CONFIRMED' : 'HELD'} />

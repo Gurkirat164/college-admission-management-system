@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import RoundSettings from './RoundSettings';
-import { post, put } from '../../lib/api';
+import { post, put, categoryLabel } from '../../lib/api';
 import { Confirm, Status, Table, type Actions } from '../../components/ui';
 import type { RunDetails } from '../../lib/types';
 import { RunResults } from '../sandbox/Sandbox';
@@ -10,8 +10,7 @@ export default function Rounds({ workspace: w, mutate, busy }: Actions) {
   return (
     <>
       <header className="page-heading">
-        <h1>Every seat, accounted for.</h1>
-        <p>Review capacity, lock choices, and publish a verified allocation.</p>
+        <h1>Rounds</h1>
       </header>
       <RoundSettings workspace={w} mutate={mutate} busy={busy} />
       <section className="round-controls">
@@ -113,7 +112,7 @@ export default function Rounds({ workspace: w, mutate, busy }: Actions) {
                 </>
               ),
             },
-            { label: 'Pool', render: p => p.seat_category.replaceAll('_', ' ') },
+            { label: 'Pool', render: p => categoryLabel(p.seat_category) },
             {
               label: 'Capacity',
               render: p => (

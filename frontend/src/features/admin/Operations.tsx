@@ -7,8 +7,7 @@ export default function Operations({ workspace: w, busy, mutate }: Actions) {
   return (
     <>
       <header className="page-heading">
-        <h1>Keep the forecast current.</h1>
-        <p>Run mock allotments and inspect scheduled-job outcomes.</p>
+        <h1>Jobs &amp; predictions</h1>
       </header>
       {error && (
         <p role="alert" className="error">

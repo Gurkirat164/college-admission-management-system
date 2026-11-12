@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ArrowDown, ArrowUp, Plus, X } from 'lucide-react';
-import { put } from '../../lib/api';
+import { put, categoryLabel } from '../../lib/api';
 import { Confirm, Empty, Status, type Actions } from '../../components/ui';
 
 export default function Choices({ workspace: w, mutate, busy }: Actions) {
@@ -17,13 +17,12 @@ export default function Choices({ workspace: w, mutate, busy }: Actions) {
   return (
     <>
       <header className="page-heading">
-        <h1>Your choices, in your order.</h1>
-        <p>List the programs you prefer most first.</p>
+        <h1>Your choices</h1>
       </header>
       <div className="notice">
         Application <Status value={w.application?.status ?? 'DRAFT'} />
         {w.application?.crl_rank && <span>Common rank {w.application.crl_rank}</span>}
-        <span>{w.application?.admission_category.replaceAll('_', ' ')}</span>
+        <span>{categoryLabel(w.application?.admission_category)}</span>
       </div>
       <div className="split">
         <section>

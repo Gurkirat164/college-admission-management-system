@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import ScenarioOptions from './ScenarioOptions';
 import SimulationInsights from './SimulationInsights';
-import { post, put, api, friendly } from '../../lib/api';
+import { post, put, api, friendly, categoryLabel } from '../../lib/api';
 import { Empty, Status, Table, type Actions } from '../../components/ui';
 import type { RunDetails } from '../../lib/types';
 
@@ -93,7 +93,7 @@ export function RunResults({ run }: { run: RunDetails }) {
               </>
             ),
           },
-          { label: 'Pool', render: r => r.seat_category.replaceAll('_', ' ') },
+          { label: 'Pool', render: r => categoryLabel(r.seat_category) },
           { label: 'Preference', render: r => r.pref_order },
           { label: 'Rank used', render: r => r.rank_used },
         ]}
@@ -133,8 +133,7 @@ export default function Sandbox({ workspace: w, busy, mutate }: Actions) {
   return (
     <>
       <header className="page-heading">
-        <h1>Change the plan. See the effect.</h1>
-        <p>Compare a scenario against the exact inputs of a saved baseline.</p>
+        <h1>What-if sandbox</h1>
       </header>
       {!bases.length ? (
         <Empty>
@@ -188,7 +187,9 @@ export default function Sandbox({ workspace: w, busy, mutate }: Actions) {
             Seat pool
             <select value={pool} onChange={e => setPool(e.target.value)}>
               {['OPEN', 'EWS', 'OBC_NCL', 'SC', 'ST'].map(x => (
-                <option key={x}>{x}</option>
+                <option key={x} value={x}>
+                  {categoryLabel(x)}
+                </option>
               ))}
             </select>
           </label>

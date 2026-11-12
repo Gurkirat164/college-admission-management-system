@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import HoldingInfo, { ExplanationSummary } from './HoldingInfo';
-import { api, put, errorMessage } from '../../lib/api';
+import { api, put, errorMessage, categoryLabel } from '../../lib/api';
 import { Confirm, Empty, Status, Table, type Actions } from '../../components/ui';
 import type { Trace } from '../../lib/types';
 
@@ -32,8 +32,7 @@ export default function Allotments({ workspace: w, busy, mutate }: Actions) {
   return (
     <>
       <header className="page-heading">
-        <h1>A clear answer to your choices.</h1>
-        <p>Your allocation and the final seat-pool cutoffs behind it.</p>
+        <h1>Your allocation</h1>
       </header>
       <HoldingInfo workspace={w} />
       {!round ? (
@@ -56,7 +55,7 @@ export default function Allotments({ workspace: w, busy, mutate }: Actions) {
                 <span className="muted">Your allocated program</span>
                 <h2>{program?.name}</h2>
                 <p>
-                  {program?.institute} / {allocation.seat_category.replaceAll('_', ' ')} / preference{' '}
+                  {program?.institute} / {categoryLabel(allocation.seat_category)} / preference{' '}
                   {allocation.pref_order}
                 </p>
               </div>
@@ -120,7 +119,7 @@ export default function Allotments({ workspace: w, busy, mutate }: Actions) {
               columns={[
                 { label: 'Choice', render: t => `${t.pref_order}. ${t.program}` },
                 { label: 'Institute', render: t => t.institute },
-                { label: 'Pool', render: t => t.seat_category.replaceAll('_', ' ') },
+                { label: 'Pool', render: t => categoryLabel(t.seat_category) },
                 { label: 'Your rank', render: t => t.rank_used },
                 { label: 'Closing rank', render: t => t.closing_rank ?? 'No seats filled' },
                 { label: 'Decision', render: t => <Status value={t.outcome} /> },

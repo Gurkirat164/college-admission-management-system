@@ -1,3 +1,4 @@
+import { categoryLabel } from '../../lib/api';
 import { Empty, Status, Table, type Actions } from '../../components/ui';
 import { useData } from '../../lib/useData';
 import type { Chance, Freshness } from '../../lib/types';
@@ -44,7 +45,7 @@ export default function MockForecast({ workspace: w }: Pick<Actions, 'workspace'
                     </h3>
                     <p>
                       {data.mock.allocation
-                        ? `Preference ${data.mock.allocation.pref_order}, ${data.mock.allocation.seat_category.replaceAll('_', ' ')}`
+                        ? `Preference ${data.mock.allocation.pref_order}, ${categoryLabel(data.mock.allocation.seat_category)}`
                         : data.mock.outcome.toLowerCase()}
                     </p>
                     <p className="small muted">
@@ -92,7 +93,7 @@ export default function MockForecast({ workspace: w }: Pick<Actions, 'workspace'
                     label: 'Program',
                     render: r => w.programs.find(p => p.program_id === r.program_id)?.code ?? r.program_id,
                   },
-                  { label: 'Pool', render: r => r.seat_category.replaceAll('_', ' ') },
+                  { label: 'Pool', render: r => categoryLabel(r.seat_category) },
                   {
                     label: 'Average closing-rank change',
                     render: r => (r.drift_percent === null ? 'Insufficient data' : `${r.drift_percent}%`),
