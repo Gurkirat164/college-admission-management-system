@@ -20,9 +20,19 @@ export function initializePostgres() {
   mkdirSync(stateDir, {recursive: true});
   const configPath = path.join(stateDir, 'local.json');
   if (existsSync(configPath)) return localConfig();
-  const candidates = [process.env.PG_BIN, 'C:/Program Files/PostgreSQL/16/bin', 'C:/Program Files/PostgreSQL/18/bin'];
+  // PostgreSQL 16 or 18 in the usual install locations on Windows, macOS (Postgres.app, Homebrew) and Linux.
+  const candidates = [
+    process.env.PG_BIN,
+    ...['16', '18'].flatMap(v => [
+      `C:/Program Files/PostgreSQL/${v}/bin`,
+      `/Applications/Postgres.app/Contents/Versions/${v}/bin`,
+      `/opt/homebrew/opt/postgresql@${v}/bin`,
+      `/usr/local/opt/postgresql@${v}/bin`,
+      `/usr/lib/postgresql/${v}/bin`,
+    ]),
+  ];
   const pgBin = candidates.find(p => p && existsSync(path.join(p, process.platform === 'win32' ? 'initdb.exe' : 'initdb')));
-  if (!pgBin) throw Error('PostgreSQL binaries not found. Set PG_BIN, or use compose.yaml with PostgreSQL 16.');
+  if (!pgBin) throw Error('PostgreSQL 16 or 18 binaries not found. Install one, set PG_BIN to its bin folder, or use compose.yaml.');
   const config = {pgBin, port: 55432, ownerPassword: randomBytes(24).toString('hex'), appPassword: randomBytes(24).toString('hex')};
   const passwordFile = path.join(stateDir, 'init-password');
   writeFileSync(passwordFile, config.ownerPassword, {mode: 0o600});

@@ -10,7 +10,6 @@ from psycopg_pool import ConnectionPool
 
 from app.cli import migrate, seed
 from app.core.config import settings
-from app.core.security import attempts
 
 
 @pytest.fixture
@@ -40,7 +39,6 @@ def client(db, monkeypatch):
     pool = ConnectionPool(db['app_url'], open=False, kwargs={'row_factory': dict_row}, min_size=0, max_size=4)
     monkeypatch.setattr(database, 'pool', pool)
     monkeypatch.setattr(main, 'pool', pool)
-    attempts.clear()
     with TestClient(main.app) as client:
         yield client
 

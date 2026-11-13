@@ -1,10 +1,99 @@
-import {useState} from 'react';
+import { useState } from 'react';
 import AuditTimeline from './AuditTimeline';
-import {api} from '../../lib/api';
-import {Empty,Status,Table,type Actions} from '../../components/ui';
-interface Verification {valid:boolean;checked:number;head_hash?:string;first_invalid_seq?:number;checkpoint_note?:string}
-interface History {program:string;seat_category:string;seats:number;valid:string}
-export default function Audit({workspace:w,busy,mutate}:Actions) {
- const [verification,setVerification]=useState<Verification|null>(null),[time,setTime]=useState(new Date().toISOString().slice(0,16)),[history,setHistory]=useState<History[]|null>(null);
- return <><header className="page-heading"><h1>The record should explain itself.</h1><p>Verify the event chain and inspect historical seat capacity.</p></header><section><div className="section-heading"><h2>Ledger integrity</h2><button disabled={busy} onClick={()=>mutate(async()=>{setVerification(await api<Verification>('/audit/verify'));},'Ledger verification completed.')}>{busy?'Verifying…':'Verify ledger'}</button></div>{verification?<div className="verification"><Status value={verification.valid?'PASS':'FAILED'}/><p>{verification.checked} events checked{verification.first_invalid_seq?`; first invalid event: ${verification.first_invalid_seq}`:''}.</p>{verification.head_hash&&<><label>Current chain head</label><code className="hash">{verification.head_hash}</code></>}<p className="small muted">{verification.checkpoint_note}</p></div>:<Empty>Run verification to check event hashes, sequence and predecessor links.</Empty>}</section><section><h2>Seat capacity through time</h2><form className="history-form" onSubmit={e=>{e.preventDefault();mutate(async()=>{setHistory(await api<History[]>(`/audit/seat-history?year=${w.year}&at=${encodeURIComponent(time+':00Z')}`));},'Historical capacity loaded.');}}><label>Recorded time (UTC)<input type="datetime-local" required value={time} onChange={e=>setTime(e.target.value)}/></label><button disabled={busy}>Look up history</button></form>{history&&<Table label="Historical seat pools" rows={history} columns={[{label:'Program',render:h=>h.program},{label:'Pool',render:h=>h.seat_category.replaceAll('_',' ')},{label:'Seats',render:h=>h.seats}]} />}</section><AuditTimeline workspace={w} busy={busy} mutate={mutate}/></>;
+import { api, categoryLabel } from '../../lib/api';
+import { Empty, Status, Table, type Actions } from '../../components/ui';
+interface Verification {
+  valid: boolean;
+  checked: number;
+  head_hash?: string;
+  first_invalid_seq?: number;
+  checkpoint_note?: string;
+}
+interface History {
+  program: string;
+  seat_category: string;
+  seats: number;
+  valid: string;
+}
+export default function Audit({ workspace: w, busy, mutate }: Actions) {
+  const [verification, setVerification] = useState<Verification | null>(null),
+    [time, setTime] = useState(new Date().toISOString().slice(0, 16)),
+    [history, setHistory] = useState<History[] | null>(null);
+  return (
+    <>
+      <header className="page-heading">
+        <h1>Audit &amp; history</h1>
+      </header>
+      <section>
+        <div className="section-heading">
+          <h2>Ledger integrity</h2>
+          <button
+            disabled={busy}
+            onClick={() =>
+              mutate(async () => {
+                setVerification(await api<Verification>('/audit/verify'));
+              }, 'Ledger verification completed.')
+            }
+          >
+            {busy ? 'Verifying…' : 'Verify ledger'}
+          </button>
+        </div>
+        {verification ? (
+          <div className="verification">
+            <Status value={verification.valid ? 'PASS' : 'FAILED'} />
+            <p>
+              {verification.checked} events checked
+              {verification.first_invalid_seq
+                ? `; first invalid event: ${verification.first_invalid_seq}`
+                : ''}
+              .
+            </p>
+            {verification.head_hash && (
+              <>
+                <label>Current chain head</label>
+                <code className="hash">{verification.head_hash}</code>
+              </>
+            )}
+            <p className="small muted">{verification.checkpoint_note}</p>
+          </div>
+        ) : (
+          <Empty>Run verification to check event hashes, sequence and predecessor links.</Empty>
+        )}
+      </section>
+      <section>
+        <h2>Seat capacity through time</h2>
+        <form
+          className="history-form"
+          onSubmit={e => {
+            e.preventDefault();
+            mutate(async () => {
+              setHistory(
+                await api<History[]>(
+                  `/audit/seat-history?year=${w.year}&at=${encodeURIComponent(time + ':00Z')}`,
+                ),
+              );
+            }, 'Historical capacity loaded.');
+          }}
+        >
+          <label>
+            Recorded time (UTC)
+            <input type="datetime-local" required value={time} onChange={e => setTime(e.target.value)} />
+          </label>
+          <button disabled={busy}>Look up history</button>
+        </form>
+        {history && (
+          <Table
+            label="Historical seat pools"
+            rows={history}
+            columns={[
+              { label: 'Program', render: h => h.program },
+              { label: 'Pool', render: h => categoryLabel(h.seat_category) },
+              { label: 'Seats', render: h => h.seats },
+            ]}
+          />
+        )}
+      </section>
+      <AuditTimeline workspace={w} busy={busy} mutate={mutate} />
+    </>
+  );
 }

@@ -169,3 +169,28 @@ def test_fresh_demo_requires_new_explicit_name_and_preserves_live_config(db,monk
     finally:
         with psycopg.connect(**params,autocommit=True) as conn:conn.execute(sql.SQL('DROP DATABASE IF EXISTS {} WITH (FORCE)').format(sql.Identifier(name)))
         (ROOT/'.local'/f'{name}-accounts.json').unlink(missing_ok=True)
+
+
+def test_admin_overview_shows_latest_baseline_then_published_round(client,db):
+    headers=login(client,db)
+    empty=client.get('/api/v1/admin/overview/2026')
+    assert empty.status_code==200,empty.text
+    data=empty.json()
+    assert data['run'] is None and data['seats']==[]
+    assert sum(p['seats'] for p in data['pools'])==15
+    assert data['applicants']['total']==12 and data['applicants']['by_category']=={'OPEN':8,'OBC_NCL':4}
+    assert data['funnel']=={'applied':12,'submitted':12,'verified':12,'ranked':12,'chose':12}
+    assert (data['demand'][0]['code'],data['demand'][0]['first_choice'],data['demand'][0]['seats'])==('CSE',12,3)
+    baseline=run(db)
+    data=client.get('/api/v1/admin/overview/2026').json()
+    assert data['run']['sim_id']==baseline and not data['run']['is_published'] and not data['run']['inputs_changed']
+    assert len(data['seats'])==12 and data['unplaced']==[]
+    assert [r['sim_id'] for r in data['runs']]==[baseline]
+    diya=next(s for s in data['seats'] if s['student_id']==1)
+    assert (diya['seat_category'],diya['admission_category'],diya['pref_order'])==('OPEN','OBC_NCL',1)
+    c=db['conn'];as_actor(c,db['accounts']);c.execute('SELECT admission.lock_round(1)')
+    published=run(db,publish=True,key='overview-fixture-publish')
+    data=client.get('/api/v1/admin/overview/2026').json()
+    assert data['run']['sim_id']==published and data['run']['is_published'] and data['round']['status']=='PUBLISHED'
+    login(client,db,email='diya@example.com')
+    assert client.get('/api/v1/admin/overview/2026').status_code==403

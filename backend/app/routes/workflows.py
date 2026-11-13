@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import uuid
 import random
 import time
@@ -113,8 +114,13 @@ def lock_round(round_id: int, user=Depends(identity)):
 @router.post("/admin/rounds/{round_id}/publish")
 def publish(round_id: int, data: Publish, user=Depends(identity)):
     sid = call("run_allocation", (round_id, Jsonb({}), None, True, data.idempotency_key), user, repeatable=True)
-    workspace = call('workspace', user=user)
-    call('refresh_predictions', (workspace['year'],), user)
+    # The round is published and committed at this point. A failed prediction refresh must not make
+    # the request look failed; the nightly job (or "Refresh predictions") catches up.
+    try:
+        workspace = call('workspace', user=user)
+        call('refresh_predictions', (workspace['year'],), user)
+    except DatabaseError:
+        logging.getLogger('admission').warning('Prediction refresh after publishing round %s failed', round_id)
     return call("simulation_analysis", (sid,), user)
 
 

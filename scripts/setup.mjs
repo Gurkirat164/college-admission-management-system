@@ -1,7 +1,6 @@
 import {spawnSync} from 'node:child_process';
 import {existsSync, writeFileSync, unlinkSync} from 'node:fs';
 import path from 'node:path';
-import os from 'node:os';
 import {root, python} from './python.mjs';
 import {initializePostgres, startPostgres, stateDir} from './local-db.mjs';
 
@@ -11,7 +10,7 @@ function run(command, args, options = {}) {
 }
 try {
   if (!existsSync(python)) {
-    const candidates = [process.env.ADMISSION_PYTHON, path.join(os.homedir(), '.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe'), 'python3', 'python'];
+    const candidates = [process.env.ADMISSION_PYTHON, 'python3', 'python', 'py'];
     const runtime = candidates.find(p => p && spawnSync(p, ['-c', 'import sys; assert sys.version_info >= (3,11)'], {windowsHide: true, stdio: 'ignore'}).status === 0);
     if (!runtime) throw Error('Python 3.11+ is required. Set ADMISSION_PYTHON to its executable.');
     run(runtime, ['-m', 'venv', path.join(root, '.venv')]);

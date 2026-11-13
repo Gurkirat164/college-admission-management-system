@@ -4,7 +4,7 @@
 
 This four-member project demonstrates admission workflows with PostgreSQL enforcing allocation and consistency. React/TypeScript provides the workbench. Python/FastAPI authenticates requests, validates uploads and calls guarded SQL routines. Versioned migrations own the schema, permissions, solver, audit and history. The hosting layout is Cloudflare Pages for frontend/proxy, Render for Python and Neon for PostgreSQL/private objects.
 
-Annual application/exam records separate student identity from changing cycle data. Institute-scoped programs avoid ambiguous names. Keys/constraints protect ranked choices, annual pools and capacities. Immutable simulation inputs and derived prediction views intentionally duplicate data for reproducibility and read performance; live records remain authoritative for publication.
+Annual application/exam records separate student identity from changing cycle data. The core tables are in BCNF; [normalization.md](normalization.md) lists their functional dependencies and every deliberate denormalization. Institute-scoped programs avoid ambiguous names. Keys/constraints protect ranked choices, annual pools and capacities. Immutable simulation inputs and derived prediction views intentionally duplicate data for reproducibility and read performance; live records remain authoritative for publication.
 
 ## Allocation and consistency
 
@@ -16,7 +16,7 @@ Runs persist immutable inputs/hash, results and proposal explanations. Capacity,
 
 Argon2 protects passwords; opaque session and CSRF values are stored as digests. HTTPS Secure cookies stay on the frontend domain through the Pages proxy. Exact Origin validation, CSRF and a server-only upstream secret protect mutations. Login limits persist in PostgreSQL. Production hides development accounts. Files are size/type/signature-checked, privately stored and authorized on download.
 
-The runtime role has approved EXECUTE privileges, not direct base writes. SECURITY DEFINER routines validate the API-supplied actor/role. The API credentials remain a trusted boundary: custom session identity does not replace an identity provider when an attacker possesses arbitrary database access. Owner credentials are excluded from the hosted runtime.
+The runtime role has approved EXECUTE privileges and no table privileges at all. Row-level security policies on the nine student-data tables are a second layer: they restrict any non-owner role given table access, while the owner-run SECURITY DEFINER functions bypass them by design (`database/showcase/06_row_level_security.sql` demonstrates both). SECURITY DEFINER routines validate the API-supplied actor/role. The API credentials remain a trusted boundary: custom session identity does not replace an identity provider when an attacker possesses arbitrary database access. Owner credentials are excluded from the hosted runtime.
 
 The audit ledger hashes complete event envelopes into a protected chain head. An independently retained checkpoint detects divergence; it cannot prevent an owner rewriting both the chain and all trusted copies. Seat history uses system statement time, not separately editable business-effective time.
 
