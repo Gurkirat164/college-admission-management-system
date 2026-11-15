@@ -58,10 +58,17 @@ def logout(request: Request, response: Response, user=Depends(identity)):
 
 @router.get("/dev/accounts")
 def demo_accounts():
-    if settings.app_env != "development":
+    # Development reads the seeded file. A hosted demo opts in with DEMO_ACCOUNTS (synthetic accounts only).
+    if settings.app_env == "development":
+        file = ROOT / ".local/demo-accounts.json"
+        accounts = json.loads(file.read_text()) if file.exists() else []
+    elif settings.demo_accounts:
+        try:
+            accounts = json.loads(settings.demo_accounts)
+        except json.JSONDecodeError:
+            raise HTTPException(404)
+    else:
         raise HTTPException(404)
-    file = ROOT / ".local/demo-accounts.json"
-    if not file.exists():
-        return []
-    accounts = json.loads(file.read_text())
+    fields = ("user_id", "email", "password", "role", "full_name", "student_id")
+    accounts = [{k: a.get(k) for k in fields} for a in accounts if isinstance(a, dict) and a.get("email") and a.get("password")]
     return [a for a in accounts if a["role"] != "STUDENT" or a.get("student_id") == 1]

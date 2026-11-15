@@ -10,7 +10,7 @@ GitHub is the source for Git-connected Render and Cloudflare Pages. Use default 
 | Neon project | `college-admission-management-system` / `twilight-sound-37433215` |
 | Neon production branch / private bucket | `main` / `admission-documents` |
 
-Migrations and synthetic seed were checked on the expiring `deployment-check` branch before main. Both branches passed the cloud solver checks and denied runtime base-table reads. Private S3 write/read/delete was verified. Hosted account credentials are saved only in ignored `.local/deployment/demo-credentials.txt`; the production development-account endpoint stays disabled. No custom domain or paid service was configured.
+Migrations and synthetic seed were checked on the expiring `deployment-check` branch before main. Both branches passed the cloud solver checks and denied runtime base-table reads. Private S3 write/read/delete was verified. Hosted account credentials are saved only in ignored `.local/deployment/demo-credentials.txt`; the production development-account endpoint stays disabled unless `DEMO_ACCOUNTS` is set on Render. No custom domain or paid service was configured.
 
 ## Cloudflare Pages
 
@@ -20,7 +20,7 @@ Repository-root build: `npm run build`; output: `frontend/dist`; Node 24. Root `
 
 Python 3.12.14, repository root, free Singapore web service. Build: `pip install -r backend/requirements.s3.lock.txt && pip install './backend[s3]'`. Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Readiness path: `/api/v1/ready`. See `render.yaml`.
 
-Runtime values: non-owner direct `DATABASE_URL`, `APP_ENV=production`, `COOKIE_SECURE=true`, exact Pages `FRONTEND_ORIGIN`, `STORAGE_BACKEND=s3`, `S3_BUCKET`, `S3_ENDPOINT`, `S3_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `PROXY_SECRET`, `JOB_TOKEN`, `SCHEDULER_USER_ID`. Do not deploy `MIGRATION_DATABASE_URL`.
+Runtime values: non-owner direct `DATABASE_URL`, `APP_ENV=production`, `COOKIE_SECURE=true`, exact Pages `FRONTEND_ORIGIN`, `STORAGE_BACKEND=s3`, `S3_BUCKET`, `S3_ENDPOINT`, `S3_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `PROXY_SECRET`, `JOB_TOKEN`, `SCHEDULER_USER_ID`. Do not deploy `MIGRATION_DATABASE_URL`. Optional `DEMO_ACCOUNTS`: a JSON list of the synthetic hosted accounts (`[{"email":…,"password":…,"role":"ADMIN","full_name":…}, …]`, students with `student_id`) shows the sign-in page's demo buttons in production; leave it unset to keep them hidden. Anyone who opens the site can then sign in as any listed role, including Admin, so use it only on the synthetic demo.
 
 The solver uses temporary tables/session state, so use a direct Neon connection. The Python pool is bounded to eight connections. Web startup never migrates/reseeds.
 

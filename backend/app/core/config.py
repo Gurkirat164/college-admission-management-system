@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     scheduler_timezone: str = "Asia/Kolkata"
     proxy_secret: str = ""
     job_token: str = ""
+    # Hosted demo only: a JSON list of synthetic accounts to show on the sign-in page outside development.
+    demo_accounts: str = ""
 
 
 settings = Settings()

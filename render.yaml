@@ -36,3 +36,5 @@ services:
         sync: false
       - key: SCHEDULER_USER_ID
         sync: false
+      - key: DEMO_ACCOUNTS
+        sync: false

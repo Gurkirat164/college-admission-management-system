@@ -23,4 +23,24 @@ def test_proxy_boundary_and_scheduler_token(monkeypatch):
 def test_production_hides_development_accounts(monkeypatch):
     from app.main import app
     monkeypatch.setattr(settings, 'app_env', 'production')
+    monkeypatch.setattr(settings, 'demo_accounts', '')
+    assert TestClient(app).get('/api/v1/dev/accounts').status_code == 404
+
+
+def test_hosted_demo_accounts_are_opt_in(monkeypatch):
+    import json
+    from app.main import app
+    monkeypatch.setattr(settings, 'app_env', 'production')
+    monkeypatch.setattr(settings, 'proxy_secret', '')
+    accounts = [
+        {'email': 'admin@example.com', 'password': 'synthetic-1', 'role': 'ADMIN', 'full_name': 'Admin', 'secret': 'dropped'},
+        {'email': 's1@example.com', 'password': 'synthetic-2', 'role': 'STUDENT', 'full_name': 'S1', 'student_id': 1},
+        {'email': 's2@example.com', 'password': 'synthetic-3', 'role': 'STUDENT', 'full_name': 'S2', 'student_id': 2},
+        {'email': 'no-password@example.com', 'role': 'ANALYST'},
+    ]
+    monkeypatch.setattr(settings, 'demo_accounts', json.dumps(accounts))
+    body = TestClient(app).get('/api/v1/dev/accounts').json()
+    assert [a['email'] for a in body] == ['admin@example.com', 's1@example.com']
+    assert 'secret' not in body[0]
+    monkeypatch.setattr(settings, 'demo_accounts', 'not json')
     assert TestClient(app).get('/api/v1/dev/accounts').status_code == 404
