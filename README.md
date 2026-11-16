@@ -1,51 +1,215 @@
 # College Admission Management System
 
-React renders the student and staff workbench, Python/FastAPI manages authentication and private documents, and PostgreSQL executes admission rules. Both original plan documents are preserved.
+A full-stack college admission management platform built with **React, FastAPI, and PostgreSQL**. It provides student application workflows, administrative admission management, automated seat allocation, analytics, document verification, and auditable admission history.
 
-Hosted college demo: <https://college-admission-164.pages.dev>. Source is pushed with Git CLI; Render and Pages deploy from the connected repository. Neon hosts PostgreSQL and private documents. Hosted sign-in credentials are shared privately, never through the public application.
+The system is designed around database-enforced admission rules, controlled access to sensitive operations, and reproducible allocation workflows.
 
-## Run locally (Windows, macOS, Linux)
+## Live Demo
 
-Requirements: Node.js 20.19+ (or 22.12+), Python 3.11+ and PostgreSQL 16 or 18 binaries. Setup finds PostgreSQL in the usual places (Windows installer, Postgres.app, Homebrew, Debian/Ubuntu packages) and Python on the PATH; `PG_BIN` and `ADMISSION_PYTHON` override detection.
+**Hosted Application:** [College Admission Management System](https://college-admission-164.pages.dev)
+
+- **Frontend:** Cloudflare Pages
+- **Backend:** Python / FastAPI on Render
+- **Database:** PostgreSQL on Neon
+- **Deployment:** Git-based deployments from the connected repository
+
+Both original project plan documents are preserved.
+
+> Hosted demonstration credentials are shared privately and are never exposed through the public application.
+
+## Architecture
+
+The application follows a layered architecture with clearly separated frontend, backend, and database responsibilities.
+
+| Layer | Technology | Responsibility |
+|---|---|---|
+| Frontend | React | Student and staff interfaces, forms, dashboards and API communication |
+| Backend | Python, FastAPI | Authentication, authorization, document handling, business workflows and background jobs |
+| Database | PostgreSQL | Admission rules, constraints, allocation logic, transactions, permissions and audit history |
+| Deployment Proxy | Cloudflare Pages Functions | Same-origin API proxy to the hosted backend |
+| Storage | Private local / S3-compatible storage | Secure document storage |
+
+**Key architectural decisions:**
+- Database functions and constraints enforce critical admission rules.
+- The application runtime uses a restricted database login rather than the database owner.
+- Sensitive database operations are exposed through guarded backend workflows.
+- Private documents are stored separately from public application assets.
+- Hosted requests pass through Cloudflare Pages to maintain same-origin authentication cookies.
+- Database migrations are checksum-verified to prevent accidental modification of previously applied migrations.
+
+## Features
+
+### Student Portal
+- Student registration and authentication.
+- Admission application submission.
+- Private document uploads and management.
+- Ranked course and college preferences.
+- Admission chance bands and mock allocation outcomes.
+- Allocation explanations and published result review.
+- Admission response and confirmation workflows.
+
+### Administration Portal
+- Centralized administrative overview.
+- Seat allocation dashboard showing who holds each seat and why.
+- Rank-versus-choice analytics.
+- Document and result verification.
+- Rank-list import with preview and commit workflows.
+- Admission rounds, deadlines and capacity configuration.
+- Checked allocation publication.
+- Admission confirmation and spot-seat management.
+
+### Analytics and Simulation
+- Replayable allocation runs using immutable inputs.
+- Scenario analysis involving seat capacity and student withdrawals.
+- Cutoff analysis and possible vacancy propagation.
+- Masked CSV exports.
+- Pinned simulation runs for comparison.
+- Synthetic admission scenarios for testing allocation behavior.
+
+### Audit and Historical Tracking
+- Immutable audit ledger events.
+- Audit checkpoint verification.
+- System-time seat history queries.
+- Traceability of administrative and allocation operations.
+
+### Background Processing
+- Scheduled mock allocation and maintenance jobs.
+- Job execution status tracking.
+- Automated prediction refreshes.
+- Private document storage using local or S3-compatible backends.
+
+## Technology Stack
+
+| Category | Technologies |
+|---|---|
+| Frontend | React, TypeScript, CSS |
+| Backend | Python, FastAPI |
+| Database | PostgreSQL |
+| API Documentation | OpenAPI, Swagger UI |
+| Deployment | Cloudflare Pages, Render |
+| Database Hosting | Neon |
+| Storage | Private local / S3-compatible storage |
+| Testing | Database/API tests, frontend request tests, Chrome E2E tests |
+| Formatting | Prettier |
+
+## Project Structure
+
+```text
+college-admission-management-system/
+│
+├── frontend/                # React screens, forms and API client
+│
+├── backend/                 # FastAPI, authentication, storage and jobs
+│   └── tests/               # Backend tests
+│
+├── database/
+│   ├── migrations/          # Authoritative schema and database logic
+│   ├── showcase/             # Commented SQL examples for DBMS concepts
+│   └── seeds/                # Synthetic demonstration records
+│
+├── functions/
+│   └── api/                  # Cloudflare Pages API proxy
+│
+├── tests/                    # Browser and proxy tests
+│
+├── scripts/                  # Setup and verification utilities
+│
+├── docs/                     # Reports, architecture and documentation
+│
+└── evidence/                 # Test results and verification evidence
+```
+
+## Getting Started
+
+### Prerequisites
+
+Install the following before setting up the project:
+
+| Dependency | Requirement |
+|---|---|
+| Node.js | 20.19+ or 22.12+ |
+| Python | 3.11+ |
+| PostgreSQL | Version 16 or 18 binaries |
+
+The setup process automatically detects PostgreSQL installations in common locations, including Windows installers, Postgres.app, Homebrew and Debian/Ubuntu packages.
+
+Python must be available through PATH.
+
+Optional environment overrides:
+
+- `PG_BIN`: PostgreSQL binary directory.
+- `ADMISSION_PYTHON`: Python executable path.
+
+### Installation and Execution
+
+Run the following commands from the project root.
 
 ```powershell
 npm run setup
 npm run dev
 ```
 
-Open <http://127.0.0.1:5173>. API docs: <http://127.0.0.1:8000/docs>. Setup initializes a separate project-owned cluster on port 55432. It generates synthetic demo records and random credentials under ignored `.local/`, and does not change an existing database service or deploy anything. Development sign-in shortcuts perform real authentication and are disabled in production. Ctrl+C stops the website/API/worker; `npm run stop` stops the project-owned database.
+Open the application:
 
-## Structure
+- **Frontend:** http://127.0.0.1:5173
+- **API Documentation:** http://127.0.0.1:8000/docs
 
-| Path | Responsibility |
-|---|---|
-| `frontend/` | React screens, forms and API client |
-| `backend/` | FastAPI, authentication, guarded SQL calls, storage and jobs |
-| `database/migrations/` | Authoritative schema, functions, constraints and permissions |
-| `database/showcase/` | Readable, commented SQL per DBMS concept, most of it runnable for the viva |
-| `database/seeds/` | Synthetic college-demo records |
-| `functions/api/` | Cloudflare Pages same-origin proxy to Render |
-| `backend/tests/`, `tests/` | Database/API, browser and proxy checks |
-| `scripts/` | Local setup and verification launchers |
-| `docs/`, `evidence/` | Operating guide, report, dictionary and measured verification |
+### Local Environment Behavior
 
-The runtime database login is not the owner and cannot directly write admission tables. Applied migrations are checksum-verified: add migrations rather than modifying applied files. Credentials never belong in frontend build variables or Git.
+The setup process:
 
-## Interface
+- Initializes a separate, project-owned PostgreSQL cluster on port `55432`.
+- Generates synthetic demonstration records.
+- Creates random development credentials.
+- Stores generated local files under the Git-ignored `.local/` directory.
+- Does not modify existing PostgreSQL services.
+- Does not deploy or modify hosted environments.
 
-The interface uses one top navigation bar, plain page titles, a light and a dark theme (following the system until the viewer picks one), and bundled Host Grotesk and Fragment Mono fonts under the SIL Open Font License (`frontend/src/assets/fonts/`). Frontend code is formatted with Prettier (`.prettierrc.json`):
+Development sign-in shortcuts perform real authentication and are disabled in production.
+
+**Stopping services:**
+
+- `Ctrl + C` stops the website, API and worker.
+- `npm run stop` stops the project-owned PostgreSQL instance.
+
+## Database Engineering and Security
+
+The database is a core part of the application's architecture, not simply a persistence layer.
+
+- Database migrations define the authoritative schema, functions, constraints and permissions.
+- Admission operations use controlled database functions and guarded SQL calls.
+- The application runtime login is not the database owner and cannot directly write to admission tables.
+- Applied migrations are checksum-verified. New changes must be introduced through additional migrations rather than modifying previously applied files.
+- Credentials are never stored in frontend build variables or committed to Git.
+- Private documents are not exposed through public application assets.
+
+For database demonstrations, `database/showcase/` contains readable and commented SQL examples covering major DBMS concepts. Most examples are independently executable and suitable for the project viva.
+
+## Interface and Design
+
+The interface follows a consistent design system:
+
+- Single top navigation bar.
+- Minimal page titles and uncluttered layouts.
+- Light and dark themes.
+- System theme detection until the user selects a preference.
+- Bundled Host Grotesk and Fragment Mono fonts, licensed under SIL Open Font License.
+
+Font assets are maintained in:
+
+```text
+frontend/src/assets/fonts/
+```
+
+Frontend formatting uses Prettier.
 
 ```powershell
 npx prettier@3.6.2 --write "frontend/src/**/*.{ts,tsx,css}"
 ```
 
-## Workflows
+## Testing and Verification
 
-Students can register, submit applications/documents, save ranked choices, inspect chance bands and mock outcomes, review explanations and respond to published results. Administrators start on an Overview: a seat plan of the published allocation (or the latest baseline) where each seat explains who holds it and why, plus a rank-against-choice chart. They can verify documents/results, preview/commit rank imports, configure rounds/deadlines, publish checked allocations, confirm admissions and manage spot seats. Analysts can replay immutable inputs, change capacity/withdrawals, inspect cutoffs and possible vacancy links, export masked CSV and pin runs. Auditors can verify ledger events/checkpoints and query system-time seat history.
-
-The scheduler records mock/maintenance job status and refreshes predictions. Files use private local/S3 storage. Hosted requests pass through Pages so Secure authentication cookies remain on the frontend's default domain.
-
-## Verification
+Run the verification commands from the project root.
 
 ```powershell
 npm run build
@@ -53,31 +217,123 @@ npm run test:ui
 npm run test:proxy
 npm test
 npm run verify:pg16
-# With npm run dev running and Chrome installed:
+```
+
+For end-to-end browser testing, with `npm run dev` running and Chrome installed:
+
+```powershell
 npm run test:e2e
 ```
 
-The suite now has 41 database/API tests, six frontend request tests and six Chrome workflows, all passing locally on PostgreSQL 18. The recorded baseline in `evidence/` ran the earlier 38 database/API tests on PostgreSQL 16.15 and 18.4. Recovery with a committed synthetic document, 100 random scenarios and the 500-request spot race passed. Deployment-specific tests supplement this baseline. See [verification evidence](evidence/local-verification.md).
+### Recorded Verification Results
 
-The 20,000-student benchmark passed correctness checks but took a median **38.3 seconds** and measured p95 **43.3 seconds** across five sequential samples. The five-second target remains unmet. Free hosting may sleep; local measurements are not a hosted performance guarantee.
+| Test Category | Result |
+|---|---|
+| Database/API tests | 41 passing |
+| Frontend request tests | 6 passing |
+| Chrome end-to-end workflows | 6 passing |
+| PostgreSQL 18 local suite | Passing |
+| PostgreSQL 16.15 baseline | Earlier 38-test suite passing |
+| Recovery testing | Passed |
+| 100 randomized scenarios | Passed |
+| 500-request spot allocation race | Passed |
 
-## Documentation and operations
+The current local suite contains 41 database/API tests, six frontend request tests and six Chrome workflows.
 
-- [Demo and operating guide](docs/demo-guide.md)
-- [Project report](docs/project-report.md)
-- [ER diagram](docs/er-diagram.md), [normalization](docs/normalization.md) and [data dictionary](docs/data-dictionary.md)
-- [DBMS showcase](database/showcase/README.md) and [migration index](database/migrations/README.md)
-- [Implementation status](docs/implementation-status.md)
-- [Deployment configuration](docs/deployment.md)
+The committed verification evidence also includes an earlier baseline covering PostgreSQL 16.15 and PostgreSQL 18.4.
+
+See [Local Verification Evidence](evidence/local-verification.md) for recorded results.
+
+### Performance Benchmark
+
+The 20,000-student benchmark passed its correctness checks but did not meet the five-second performance target.
+
+| Metric | Measured Result |
+|---|---:|
+| Dataset | 20,000 students |
+| Median execution time | 38.3 seconds |
+| P95 execution time | 43.3 seconds |
+| Samples | 5 sequential runs |
+| Target | 5 seconds |
+
+The performance target remains unmet. These measurements are local benchmark results, not guarantees of hosted performance. Free hosting instances may also experience cold starts or sleep periods.
+
+## Documentation
+
+| Document | Description |
+|---|---|
+| [Demo and Operating Guide](docs/demo-guide.md) | Demonstration workflows and operational instructions |
+| [Project Report](docs/project-report.md) | Detailed project documentation |
+| [ER Diagram](docs/er-diagram.md) | Entity relationships and database structure |
+| [Normalization](docs/normalization.md) | Database normalization documentation |
+| [Data Dictionary](docs/data-dictionary.md) | Database entities, attributes and definitions |
+| [DBMS Showcase](database/showcase/README.md) | SQL demonstrations of DBMS concepts |
+| [Migration Index](database/migrations/README.md) | Database migration history |
+| [Implementation Status](docs/implementation-status.md) | Implementation progress and current status |
+| [Deployment Configuration](docs/deployment.md) | Hosting and deployment details |
+
+## Useful Maintenance Commands
+
+### Background Jobs
 
 ```powershell
 npm run jobs:once
+```
+
+### Backup Verification
+
+```powershell
 npm run backup:verify
+```
+
+### Create a Fresh Demonstration Dataset
+
+```powershell
 npm run demo:new -- --name admission_demo_fresh
+```
+
+Creating a fresh demonstration dataset preserves the active dataset. Switching to the new dataset requires the explicit `--activate` option.
+
+### Export Database Schema
+
+```powershell
 npm run schema:export
-npm run docs:er     # regenerate docs/er-diagram.md from the migrated schema
-npm run demo:race   # one seat, many simultaneous requests: naive vs atomic update
+```
+
+### Regenerate ER Diagram
+
+```powershell
+npm run docs:er
+```
+
+Generates `docs/er-diagram.md` from the migrated database schema.
+
+### Allocation Race Demonstration
+
+```powershell
+npm run demo:race
+```
+
+Demonstrates the difference between naive seat updates and atomic database operations under concurrent requests.
+
+### Create Audit Checkpoint
+
+```powershell
 node scripts/python.mjs -m app.cli checkpoint
 ```
 
-Fresh demo creation preserves the active dataset; switching requires explicit `--activate`. Recovery combines database and committed private objects. Keep audit checkpoints outside the workspace for independent protection. This fixed-pool demonstration excludes horizontal reservations, supernumerary seats and category conversion. Chance bands use synthetic history and are not calibrated probabilities. Vacancy links show possible propagation, not exact causation. History is system-time, not business-effective time.
+## Known Limitations and Design Constraints
+
+The system has several explicitly documented limitations:
+
+1. **Fixed seat pool:** The demonstration currently excludes horizontal reservations, supernumerary seats and category conversion.
+2. **Admission predictions:** Chance bands are derived from synthetic historical data and are not calibrated probabilities.
+3. **Vacancy propagation:** Vacancy links illustrate possible propagation paths, not exact causal relationships.
+4. **Historical tracking:** Seat history uses system-time tracking rather than business-effective time.
+5. **Performance:** The 20,000-student benchmark currently exceeds the five-second target.
+6. **Hosting:** Free-tier infrastructure may introduce cold starts and availability delays.
+
+---
+
+**College Admission Management System**  
+A database-driven admission platform demonstrating full-stack development, relational database engineering, transaction safety, automated allocation, and auditable administrative workflows.
