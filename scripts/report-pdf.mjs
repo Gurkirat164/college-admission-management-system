@@ -1,4 +1,4 @@
-// Builds PROJECT_REPORT_V2.pdf from PROJECT_REPORT_V2.md, with the Mermaid diagrams drawn
+// Builds PROJECT_REPORT.pdf from PROJECT_REPORT.md, with the Mermaid diagrams drawn
 // and the screenshots embedded. Run with: npm run report:pdf
 // Needs Google Chrome and an internet connection (the Markdown and Mermaid renderers load from a CDN).
 import { readFileSync } from 'node:fs';
@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const source = process.argv[2] ?? 'PROJECT_REPORT_V2.md';
+const source = process.argv[2] ?? 'PROJECT_REPORT.md';
 const target = source.replace(/\.md$/, '.pdf');
 const repo = 'https://github.com/Gurkirat164/college-admission-management-system/blob/main/';
 const markdown = readFileSync(resolve(root, source), 'utf8');
@@ -46,7 +46,7 @@ const style = `
 
 const browser = await chromium.launch({ channel: 'chrome', headless: true });
 const page = await browser.newPage();
-await page.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>${style}</style></head><body><main></main></body></html>`);
+await page.setContent(`<!doctype html><html><head><meta charset="utf-8"><title>College Admission Management System - Project Report</title><style>${style}</style></head><body><main></main></body></html>`);
 await page.addScriptTag({ url: 'https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js' });
 await page.addScriptTag({ url: 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js' });
 await page.evaluate(

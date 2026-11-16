@@ -4,200 +4,115 @@
 
 | Item | Details |
 |---|---|
+| Team | Arshdeep Singh, Gurkirat Singh, Prabhjot Singh, Tavjeet Singh |
 | Project area | Database Management Systems and web application development |
 | Frontend | React, TypeScript, Vite |
-| Backend | Python, FastAPI, Uvicorn |
-| Database | PostgreSQL on Neon |
-| Deployment | Cloudflare Pages frontend and API proxy; Render backend; Neon database and private object storage |
-| Application | [College Admission Management System](https://college-admission-164.pages.dev/) |
-
----
-
-## Abstract
-
-The College Admission Management System is a database-centered web application for managing an annual admission cycle. It supports student applications, document verification, examination records, ranked program preferences, seat allocation, counselling rounds, applicant decisions, final admission, and spot allocation. Four roles—student, administrator, analyst, and auditor—receive separate interfaces and permissions.
-
-The project places admission rules and consistency controls in PostgreSQL. The React interface presents the workbench, while FastAPI authenticates requests, validates submitted information, manages private documents, and calls approved database functions. PostgreSQL executes the allocation algorithm, validates results, protects seat capacity, records audit events, and preserves historical and simulation data.
-
-The application also provides historical chance bands, scheduled mock allotments, immutable what-if simulations, and an administrator Overview page. Its deployed architecture uses Cloudflare Pages, Render, and Neon. Testing evidence demonstrates functional correctness, concurrency control, and recovery behavior. The report also records an important limitation: the measured allocation time for the large synthetic dataset exceeds the original five-second target.
+| Backend | Python, FastAPI |
+| Database | PostgreSQL (31 tables, stored functions, triggers, views, row-level security) |
+| Deployment | Cloudflare Pages, Render, Neon |
+| Application | [college-admission-164.pages.dev](https://college-admission-164.pages.dev/) |
 
 ## 1. Introduction
 
-College admission involves more than collecting student forms. An institution must combine eligibility, ranks, preferences, category-specific capacity, document status, and counselling decisions while keeping records consistent. Multiple users may work at the same time, and administrators must be able to explain why an applicant received a particular seat.
+The College Admission Management System is a web application that manages student applications, program preferences, seat allocation, and counselling rounds. It brings students and admission staff onto one platform and stores admission records in a PostgreSQL database.
 
-This project models these requirements as a relational database application. The database serves as the authority for admission state and allocation rules. The web interface makes the workflows accessible to different users, and the API provides a controlled boundary between those users and the database.
+The project demonstrates how DBMS concepts such as relational design, constraints, stored functions, transactions, and access control can support a practical admission process. The database is not passive storage: admission rules, the allocation algorithm, and consistency checks all run inside PostgreSQL. The system uses synthetic student data for academic demonstration.
 
-The system uses synthetic admission records for demonstration. It is an academic implementation of a fixed-pool policy rather than a certified implementation of any national admission scheme.
+## 2. Problem Statement and Objectives
 
-## 2. Problem Statement
+Managing admissions through spreadsheets and manual records can cause duplicate entries, inconsistent seat counts, and difficulty tracking student decisions. When two requests arrive together, a seat that is checked and updated in separate steps can be given away twice. A centralized system helps organize this information and apply admission rules consistently.
 
-Admission processes managed through disconnected spreadsheets or manual records can suffer from duplicate entries, inconsistent ranks, outdated seat counts, and incomplete histories. Concurrent requests can allocate the same available seat more than once if capacity is checked and updated separately. Changes to applicant information can also make an earlier allocation difficult to reproduce.
+The project aims to:
 
-The project addresses these problems by maintaining one authoritative database, enforcing integrity through constraints and guarded functions, executing allocation inside transactions, preserving immutable simulation inputs, and recording important operations in an auditable history.
+- Maintain student applications, examination results, documents, and seat availability.
+- Allocate seats according to eligibility, ranks, and student preferences.
+- Support multiple counselling rounds and student responses.
+- Provide separate interfaces for students, administrators, analysts, and auditors.
+- Preserve admission history and prevent conflicting seat assignments.
 
-## 3. Objectives
+## 3. Technology and Architecture
 
-The main objectives are to:
-
-1. Maintain annual applications, examination results, documents, programs, and seat pools in a relational database.
-2. Provide authenticated interfaces for students, administrators, analysts, and auditors.
-3. Allocate seats using verified ranks and ordered preferences without exceeding capacity.
-4. Support multiple counselling rounds and FREEZE, FLOAT, SLIDE, and WITHDRAW decisions.
-5. Explain allocation outcomes and preserve the inputs used to produce them.
-6. Allow analysts to compare hypothetical scenarios without changing live capacity or holdings.
-7. Prevent duplicate or conflicting operations through transactions, locks, constraints, and idempotency.
-8. Demonstrate normalization, stored functions, triggers, views, indexing, concurrency control, and recovery.
-9. Deploy the application and verify the integration between the frontend, backend, and database.
-
-## 4. Scope
-
-### 4.1 Included functionality
-
-The implemented scope covers account authentication, student registration, annual applications, private document upload and review, examination records, CSV imports, ranked choices, eligibility checks, allocation simulations, publication, later counselling rounds, final admissions, and spot seats.
-
-Supporting functionality includes historical cutoff imports, prediction freshness indicators, mock allotments, scheduled jobs, audit verification, checkpoint comparison, temporal seat history, masked simulation exports, and backup/restore verification tools.
-
-### 4.2 Scope boundaries
-
-The admission model uses fixed OPEN, EWS, OBC-NCL, SC, and ST pools. Horizontal reservations, supernumerary seats, and category conversion are outside the implemented policy. Historical chance bands use synthetic data and are heuristics rather than calibrated probabilities. Vacancy links describe possible propagation between seat pools rather than uniquely established causal chains.
-
-## 5. User Roles
-
-| Role | Main responsibilities | Interface sections |
+| Component | Technology | Purpose |
 |---|---|---|
-| Student | Maintain an application, upload documents, rank programs, inspect forecasts and allocations, respond to results, and view spot availability | Choices, Application, Allocation, Chances, Spot round |
-| Administrator | Review records, manage ranks and capacity, configure rounds, publish allocations, monitor jobs, and confirm admissions | Overview, Rounds, Applications, Admissions, Imports, Jobs, Sandbox, Spot round, Audit |
-| Analyst | Inspect saved runs and compare capacity or withdrawal scenarios using immutable inputs | Sandbox |
-| Auditor | Inspect event metadata, verify the audit chain, compare checkpoints, and retrieve historical seat capacity | Audit |
+| Frontend | React, TypeScript, Vite | Forms, dashboards, and role-based navigation |
+| Backend | Python and FastAPI | Authentication, request handling, and document access |
+| Database | PostgreSQL | Admission records, allocation rules, and data integrity |
+| Frontend hosting | Cloudflare Pages | Serves the interface and proxies API requests |
+| Backend hosting | Render | Runs the FastAPI service |
+| Database hosting | Neon | Hosts PostgreSQL and private document storage |
 
-The interface exposes role-appropriate navigation. Authorization is also enforced behind the interface by API identity checks and database routines.
-
-## 6. Technology Stack
-
-| Layer | Technology | Purpose |
-|---|---|---|
-| User interface | React 19 and TypeScript | Component-based interfaces with typed API data |
-| Frontend tooling | Vite and TypeScript compiler | Development server, compilation, and production assets |
-| Styling | CSS and bundled fonts | Responsive layouts and light/dark themes |
-| API | FastAPI and Pydantic | HTTP routing and input validation |
-| Application server | Uvicorn | Runs the Python ASGI application |
-| Database access | Psycopg 3 and Psycopg connection pool | Parameterized PostgreSQL calls and bounded connections |
-| Password protection | Argon2 through `argon2-cffi` | Password hashing and verification |
-| Database | PostgreSQL | Relational storage, allocation functions, constraints, transactions, and audit |
-| Object storage integration | Local adapter or private S3-compatible storage; Boto3 | Store and retrieve document bytes |
-| Testing | Pytest, HTTPX, Vitest, Playwright, and Node test runner | Database/API, frontend, browser, and proxy checks |
-| Hosting | Cloudflare Pages, Render, and Neon | Frontend/proxy, backend, and database/storage |
-| Automation | GitHub Actions | Repository verification and scheduled job requests |
-
-The deployment configuration specifies Python 3.12.14. The live database reported PostgreSQL 16.16 during the November 2026 inspection. These deployment versions are distinct from the versions used in older local benchmark evidence.
-
-## 7. System Architecture
+**Figure 1. System architecture**
 
 ```mermaid
-flowchart TD
-    U[Student / Administrator / Analyst / Auditor]
-    F[React interface on Cloudflare Pages]
-    P[Same-origin Pages API proxy]
-    B[FastAPI service on Render]
-    D[(PostgreSQL on Neon)]
-    S[Private document object storage]
-    G[GitHub Actions scheduler]
-
-    U -->|HTTPS| F
-    F -->|/api/v1 requests| P
-    P -->|Fixed upstream and server-only proxy secret| B
-    B -->|Approved SQL functions| D
-    B -->|Authorized document operations| S
-    G -->|Protected daily-job request| B
+flowchart LR
+    U[User] <-->|HTTPS| F["React interface<br/>Cloudflare Pages"]
+    F <-->|API requests| P[Cloudflare API proxy]
+    P <-->|Authenticated requests| B["FastAPI backend<br/>Render"]
+    B <-->|SQL functions| D[("PostgreSQL<br/>Neon")]
+    B <-->|Private files| S[Document storage]
 ```
 
-### 7.1 Frontend
+The frontend displays information and collects input. FastAPI authenticates users and calls approved database functions. PostgreSQL applies admission rules and stores the results. Uploaded documents are held in private storage, with their metadata recorded in the database.
 
-React renders forms, tables, allocation views, simulation details, and audit controls. The API client uses the same-origin `/api/v1` path by default. For modifying requests, it includes the CSRF token supplied through the application's cookie mechanism.
+Figure 2 follows one request, a student saving ranked choices, through every layer. Each layer performs its own check, so a mistake in one layer is caught by the next.
 
-### 7.2 API and proxy
+**Figure 2. One request through the system**
 
-The Pages proxy forwards `/api/*` requests to a fixed HTTPS backend origin and attaches a server-only proxy secret. This arrangement keeps authentication cookies on the frontend domain. FastAPI handles authentication, request validation, file processing, and calls into PostgreSQL.
+```mermaid
+sequenceDiagram
+    autonumber
+    actor S as Student
+    participant F as React interface
+    participant P as Pages proxy
+    participant B as FastAPI
+    participant D as PostgreSQL
 
-### 7.3 Database
+    S->>F: Save ranked choices
+    F->>P: PUT /api/v1/me/choices/2026 with session cookie and CSRF token
+    P->>B: Forward with server-only proxy secret
+    B->>B: Check session, CSRF token and Origin
+    B->>D: Call the choice function as the signed-in user
+    D->>D: require_role('STUDENT')
+    D->>D: Trigger guard_choices() checks deadline and lock
+    D->>D: Constraints reject duplicate programs or positions
+    D->>D: Trigger audit_change() appends to the audit ledger
+    D-->>B: Saved choices
+    B-->>F: 200 OK
+    F-->>S: Updated list
+```
 
-PostgreSQL stores the authoritative admission records and executes business rules through versioned SQL functions. The runtime role is separate from the owner role and accesses approved functions rather than application tables directly. The connection pool has a maximum of eight connections.
+## 4. User Roles and Features
 
-### 7.4 Documents
+| Role | Main features |
+|---|---|
+| Student | Submit an application, upload documents, rank programs, view chances and allocations, and respond to results |
+| Administrator | Review applications, manage exam results and seat capacity, configure rounds, publish allocations, and confirm admissions |
+| Analyst | Explore saved simulations and compare changes in capacity or student participation |
+| Auditor | Inspect audit events and historical seat-capacity records |
 
-Document metadata belongs in PostgreSQL; file bytes belong in private object storage. Downloads pass through an authorized API endpoint. The storage adapter allows local development to use local files while the hosted application uses private S3-compatible storage.
+Additional features include CSV imports, mock allotments, historical cutoff information, an administrator Overview dashboard, and spot-seat availability.
 
-## 8. Functional Modules
+**Screen 1. Student: ranked program choices**
 
-### 8.1 Authentication and sessions
+![Student choices screen with a ranked preference list and the available programs](docs/screenshots/student-choices.png)
 
-Users sign in with an email address and password. Passwords are stored as Argon2 hashes. Successful authentication creates opaque session and CSRF values; their digests are stored in PostgreSQL. Production uses Secure cookies and disables the development-account listing endpoint. Login-attempt limits are persisted in the database.
+## 5. Database Design
 
-### 8.2 Applications, documents, and examination records
+The `admission` schema contains 31 tables. The database separates permanent student information from records that change each admission year. This allows one student to have applications and examination results for different cycles without duplicating their identity record.
 
-A student has an identity record and can have an application for each admission year. Documents follow a pending/verified/rejected review process. Uploads accept PDF, PNG, or JPEG content up to 5 MB and validate file signatures rather than trusting the filename alone.
+| Main tables | Information stored |
+|---|---|
+| `student`, `app_user` | Student identity and user accounts |
+| `admission_cycle`, `application`, `exam_result` | Annual admission settings, applications, marks, and ranks |
+| `program`, `seat_matrix`, `choice` | Programs, category-wise capacity, and ranked preferences |
+| `counselling_round`, `allocation`, `student_response` | Rounds, published seats, and student decisions |
+| `seat_holding`, `final_admission` | Current holdings and confirmed admissions |
+| `document_submission` | Document metadata and review status |
+| `sim_input_snapshot`, `sim_run`, `sim_result` | Saved simulation inputs and outcomes |
+| `spot_pool`, `spot_acceptance` | Available spot seats and acceptance records |
+| `audit_ledger`, `seat_matrix_history` | Event history and changes in capacity |
 
-Administrators verify documents and examination information before approving an application. Examination results can be entered manually or imported through CSV. The subject-mark import computes deterministic ranks using total marks, mathematics, physics, earlier birth date, and student ID as tie-break criteria. Import preview and commit are separate, and a source revision check rejects stale previews.
-
-### 8.3 Program choices
-
-Students maintain an ordered list of eligible programs. Constraints prevent duplicate programs and repeated preference positions for the same student and year. A list contains at most 30 preferences. Database guards enforce verification requirements, deadlines, and locked-choice state.
-
-### 8.4 Allocation and counselling
-
-Administrators configure capacity and counselling deadlines, inspect a baseline run, lock the round, and publish a checked allocation. Published outcomes become the basis for student decisions and later rounds. Final admission confirmation is available after the required round closure conditions are satisfied.
-
-### 8.5 Simulations and analysis
-
-Saved simulation inputs allow analysts to replay a baseline and evaluate changes such as increased capacity or withdrawals. Results include assignments, closing ranks, differences, verification checks, and possible vacancy links. Analysts see masked student identifiers in analysis output. Saved runs can be pinned for retention and exported as CSV.
-
-### 8.6 Historical chances and mock allotments
-
-The predictor uses historical cutoff information and displays chance bands with freshness information. Target-year outcomes are excluded from that year's historical prediction. Mock allotments show an outcome against a saved input revision without creating live seat holdings.
-
-### 8.7 Administrator Overview
-
-The Overview page combines the current round, applicant counts, seat plan, demand, application funnel, run timings, and recent activity. Its data is supplied by the read-only `admission.admin_overview(year)` function. It displays the current round's published allocation or latest eligible live baseline. If neither exists, the page displays an explicit empty allocation state.
-
-### 8.8 Audit and operations
-
-Audit tools verify the hash chain, page through event metadata, compare a separately retained checkpoint, and retrieve historical seat capacity. Operations tools display scheduled job status and prediction freshness. Durable job records support retries and duplicate-slot protection.
-
-## 9. Database Design
-
-The migrated `admission` schema contains **31 base tables**. Supporting objects include stored functions, indexes, a materialized cutoff view, the allocation trace view, triggers, and row-level security policies. Migration history is recorded separately in `public.schema_migration`.
-
-### 9.1 Principal relations
-
-| Relation | Main key | Responsibility |
-|---|---|---|
-| `student` | `student_id` | Student identity and birth date |
-| `app_user` | `user_id`; unique email | Login identity, role, enabled state, and optional student link |
-| `app_session` | `token_hash` | Session identity, CSRF digest, and expiry |
-| `admission_cycle` | `year` | Annual deadlines, lock state, policy, and input revision |
-| `application` | `(student_id, year)` | Annual application category and review state |
-| `exam_result` | `(student_id, year)` | Annual marks, common rank, and category rank |
-| `program` | `program_id`; unique `(institute, code)` | Institute-specific program identity |
-| `program_eligibility` | `(year, program_id)` | Minimum marks by program and year |
-| `seat_matrix` | `(year, program_id, seat_category)` | Annual capacity per pool |
-| `choice` | `(student_id, year, pref_order)` | Ranked program preferences |
-| `counselling_round` | `round_id`; unique `(year, round_no)` | Round lifecycle and publication reference |
-| `allocation` | `(round_id, student_id)` | Published round results |
-| `student_response` | `(round_id, student_id)` | Response to a published allocation |
-| `seat_holding` | `(year, student_id)` | Current annual holding |
-| `final_admission` | `(year, student_id)` | Final admission confirmation |
-| `document_submission` | `document_id`; unique storage key | Private file metadata, checksum, size, and review |
-| `sim_input_snapshot` | `snapshot_id` | Immutable input payload and hash |
-| `sim_run` | `sim_id` | Run metadata, checks, summary, and baseline reference |
-| `sim_result`, `sim_student_outcome`, `sim_trace`, `sim_diff` | Composite keys including `sim_id` | Assignments, outcomes, explanations, and comparisons |
-| `hist_closing` | `(year, round_no, program_id, seat_category)` | Historical cutoff information |
-| `spot_pool` | `pool_id`; unique annual program/pool | Remaining spot capacity |
-| `spot_acceptance` | `acceptance_id` | Idempotent spot acceptance records |
-| `audit_ledger`, `audit_chain_head` | Sequence and singleton keys | Audit events and protected chain head |
-| `seat_matrix_history` | `history_id` | System-time capacity history |
-| `prediction_state`, `job_run`, `login_attempt` | Annual, job, and attempt keys | Predictor freshness, job execution, and login throttling |
-
-### 9.2 Main relationships
+**Figure 3. Core database relationships**
 
 ```mermaid
 erDiagram
@@ -206,353 +121,266 @@ erDiagram
     APPLICATION ||--o| EXAM_RESULT : has
     APPLICATION ||--o{ DOCUMENT_SUBMISSION : includes
     EXAM_RESULT ||--o{ CHOICE : supports
-    PROGRAM ||--o{ CHOICE : listed_in
+    PROGRAM ||--o{ CHOICE : appears_in
     PROGRAM ||--o{ SEAT_MATRIX : has
     ADMISSION_CYCLE ||--o{ COUNSELLING_ROUND : contains
     COUNSELLING_ROUND ||--o{ ALLOCATION : publishes
     STUDENT ||--o{ ALLOCATION : receives
     ALLOCATION ||--o| STUDENT_RESPONSE : receives
-    COUNSELLING_ROUND ||--o{ SIM_INPUT_SNAPSHOT : snapshots
-    SIM_INPUT_SNAPSHOT ||--o{ SIM_RUN : supplies
-    SIM_RUN ||--o{ SIM_RESULT : produces
-    APPLICATION ||--o| SEAT_HOLDING : holds
-    SEAT_HOLDING ||--o| FINAL_ADMISSION : confirms
-    SPOT_POOL ||--o{ SPOT_ACCEPTANCE : records
 ```
 
-This is a conceptual summary. The complete schema diagram and constraint definitions are available in [the ER documentation](docs/er-diagram.md) and [data dictionary](docs/data-dictionary.md).
+One student can apply in multiple years. Each application can have several documents and preferences. The diagram shows the main relationships; supporting tables are omitted for clarity. The complete diagram, with every column and key, is generated from the live schema in [docs/er-diagram.md](docs/er-diagram.md).
 
-### 9.3 Integrity constraints
+### 5.1 Keys and constraints
 
-Primary keys identify records, foreign keys preserve valid references, UNIQUE constraints prevent duplicate choices and holdings, and CHECK constraints restrict marks, capacity, statuses, and decisions. For example:
+Primary keys identify records, while foreign keys connect related tables. Composite keys represent annual records and seat pools. UNIQUE constraints prevent duplicate preferences and conflicting holdings; CHECK constraints restrict marks, capacity, and valid statuses. The rules are declared in the schema, so no application bug can store a row that breaks them:
 
 ```sql
--- Annual seat pools have one capacity record each.
-PRIMARY KEY (year, program_id, seat_category)
+-- choice: one row per preference position, and a program can appear only once per list.
+PRIMARY KEY (student_id, year, pref_order)
+UNIQUE      (student_id, year, program_id)
 
--- A program can appear only once in a student's annual list.
-UNIQUE (student_id, year, program_id)
+-- seat_holding: the key itself means "at most one seat per student per year".
+PRIMARY KEY (year, student_id)
 
--- Remaining capacity cannot be negative or exceed its starting value.
+-- spot_pool: remaining seats can never go below zero or above the starting capacity.
 CHECK (seats_left >= 0 AND seats_left <= initial_capacity)
+
+-- seat_matrix_history: two capacity records for the same pool cannot overlap in time.
+EXCLUDE USING gist (year WITH =, program_id WITH =, seat_category WITH =, valid WITH &&)
 ```
 
-An exclusion constraint prevents overlapping validity ranges for the same historical seat pool. Migration `0020` adds an identity primary key to `login_attempt`, completing primary-key coverage across all application tables.
+### 5.2 Normalization
 
-## 10. Normalization
+The core tables are in BCNF: in every table, each functional dependency has a candidate key on its left side.
 
-The core relational tables are designed around dependencies on their candidate keys. Annual facts are separated from permanent identities: a student's name belongs to identity data, while the student's admission category and examination result belong to a specific year.
-
-| Relation | Example dependency | Design consequence |
+| Table | Candidate keys | Functional dependencies |
 |---|---|---|
-| `program` | `program_id → institute, code, name` | Choices reference a program instead of repeating its descriptive fields |
-| `application` | `(student_id, year) → category, status, review_reason` | Application state is stored per admission cycle |
-| `seat_matrix` | `(year, program_id, seat_category) → seats` | Capacity is an annual pool fact |
-| `choice` | `(student_id, year, pref_order) → program_id` | Preference order is represented by rows |
-| `choice` | `(student_id, year, program_id) → pref_order` | A second candidate key prevents duplicate program choices |
+| `student` | `student_id` | `student_id → full_name, dob` |
+| `application` | `(student_id, year)` | `(student_id, year) → admission_category, status, review_reason` |
+| `exam_result` | `(student_id, year)`; `(year, crl_rank)` | `(student_id, year) → total_marks, crl_rank, cat_rank` |
+| `program` | `program_id`; `(institute, code)` | `program_id → institute, code, name` |
+| `seat_matrix` | `(year, program_id, seat_category)` | `(year, program_id, seat_category) → seats` |
+| `choice` | `(student_id, year, pref_order)`; `(student_id, year, program_id)` | Each key determines the other column |
 
-The core relations are documented as BCNF under the stated dependencies, with explicit redundancy qualifications. The design also deliberately stores derived or repeated information:
+Three design decisions follow from these dependencies:
 
-- `full_name` appears in both `student` and `app_user`; a shared person relation could remove this duplication.
-- `total_marks` can be derived from subject marks, but manual rank entry may supply only a total. A CHECK enforces equality when all subject marks exist.
-- Published allocations retain the rank and preference used at publication so later corrections do not rewrite their meaning.
-- `spot_acceptance.year` supports a declarative uniqueness rule for one annual spot acceptance, although the year is also reachable through the pool.
-- JSONB snapshots and simulation outputs preserve historical inputs and results rather than depending on mutable live records.
+- **No repeating groups (1NF).** A student's preferences are rows of `choice`, not a list in one column.
+- **No partial dependencies (2NF).** A program's name depends only on `program_id`, so it lives in `program` and is never repeated on `choice`.
+- **Annual facts are separate from identity (3NF/BCNF).** Category and rank belong to `(student_id, year)`; the student's name belongs to `student_id` alone.
 
-The normalization claims therefore apply to the core relational model rather than to every cache, snapshot, or derived structure. [Normalization documentation](docs/normalization.md) records the detailed dependencies and tradeoffs.
+Some data is repeated on purpose. A published `allocation` keeps the rank and preference that won the seat, so a later rank correction cannot rewrite history. Simulation snapshots keep a hashed JSON copy of their inputs so any run can be replayed exactly. Every such case, with the rule that keeps it correct, is listed in [docs/normalization.md](docs/normalization.md).
 
-## 11. Seat Allocation Algorithm
+## 6. Admission and Allocation Workflow
 
-### 11.1 Inputs and priorities
+**Figure 4. Admission process**
 
-The allocation engine combines verified applicants, eligibility, ranked choices, annual pool capacities, and applicable prior-round decisions. Each ranked program expands into eligible OPEN and category-pool proposals while retaining the student's original program preference.
-
-OPEN pools use common rank. Reserved pools use verified category rank. The supported category values are `OPEN`, `EWS`, `OBC_NCL`, `SC`, and `ST`.
-
-### 11.2 Deferred acceptance
-
-The solver uses deferred acceptance implemented in PostgreSQL:
-
-1. Capture or load the immutable input snapshot and validate its hash.
-2. Prepare eligible proposal options and prior-round restrictions.
-3. Have unassigned applicants propose to their next permissible option.
-4. Retain the best eligible applicants at each pool up to its capacity.
-5. Reject excess proposals so those applicants can try their next option.
-6. Repeat until no further proposals can be made.
-7. Persist assignments, unassigned outcomes, traces, differences, and checks.
-
-The latest solver definition is in migration `0015_allocation_phase_timings.sql`. Earlier definitions remain in migration history; they do not represent additional active solvers.
-
-### 11.3 Correctness checks
-
-Runs check pool capacity and blocking-pair stability. Later-round processing protects applicable previous holdings and checks for prohibited downgrades. Add-only scenarios test monotonicity only when the other saved inputs are identical. These checks apply to the implemented priority and eligibility model.
-
-### 11.4 Publication and decisions
-
-Publication requires an authorized administrator, a locked round, unchanged live inputs, and an idempotency key. Results, current holdings, relevant state transitions, and audit changes commit transactionally.
-
-| Decision | Meaning |
-|---|---|
-| FREEZE | Retain the allocated seat without seeking an improvement |
-| FLOAT | Allow a more preferred eligible program while preserving the required fallback |
-| SLIDE | Allow a more preferred program within the same institute |
-| WITHDRAW | Leave participation and release the applicable holding |
-
-## 12. Transactions and Concurrency Control
-
-### 12.1 ACID behavior
-
-Atomic transactions keep related admission updates together. Constraints and validation preserve consistency. Allocation calls use repeatable-read transactions where required, and the application retries bounded serialization/deadlock failures. Committed PostgreSQL records provide durable state; recovery tools also account for committed document objects.
-
-### 12.2 Seat safety and idempotency
-
-Spot acceptance uses guarded capacity updates and locking so competing requests cannot all accept the same remaining place. Uniqueness rules protect annual student holdings and request identifiers. Publication keys prevent a retried request from publishing duplicate results.
-
-Jobs use locks and unique schedule slots to avoid overlapping or duplicate execution. The database also serializes audit-chain updates, which preserves chain order but can become a contention point under concurrent workloads.
-
-## 13. SQL and DBMS Concepts Demonstrated
-
-| Concept | Project example |
-|---|---|
-| Composite keys | Annual applications, choices, and seat matrices |
-| Referential integrity | Documents reference annual applications; final admissions reference holdings |
-| CHECK and exclusion constraints | Valid marks, nonnegative capacity, and nonoverlapping historical ranges |
-| Stored functions | Allocation, publication, workspace retrieval, and Overview aggregation |
-| Triggers | Choice guards, audit recording, and seat-capacity history |
-| Joins and aggregation | Applicant summaries, pool demand, and admin dashboards |
-| Conditional aggregation | Application funnel using aggregate `FILTER` clauses |
-| Window functions | Deterministic ranking in examination imports |
-| Recursive CTEs | Possible vacancy-link analysis |
-| Views and materialized views | Published allocation traces and cutoff trends |
-| Indexes | Keys and frequently queried relationships, sessions, and login attempts |
-| Transactions and locking | Publication, spot acceptance, jobs, and audit-chain serialization |
-| Access control and RLS | Restricted runtime privileges and student-data policies |
-| Temporal data | `tstzrange` seat-capacity history |
-| JSONB and hashes | Immutable solver inputs and audit envelopes |
-
-Readable examples are provided in [database/showcase](database/showcase/README.md).
-
-## 14. Security Design
-
-The security model combines password hashing, expiring sessions, CSRF validation, exact Origin validation for modifying requests, and role checks. Session values and CSRF values are stored as digests. Production cookies are Secure and use SameSite protection; the session cookie is HttpOnly.
-
-The runtime database account has no direct application-table privileges. Approved `SECURITY DEFINER` routines run with their owner's privileges, pin their search path, and validate the actor supplied by the trusted API. Row-level security policies exist on nine student-data tables as an additional layer for non-owner table access. Owner-executed functions bypass those policies by design, so routine authorization and restricted EXECUTE permissions remain central controls.
-
-Private files require an authorized download request. File size, MIME signature, metadata checksum, and stored size support validation and integrity checks. Analysis output masks student identifiers for the analyst role. CSV generation also protects against spreadsheet formula interpretation in exported values.
-
-The API's database credentials remain a trusted boundary: possession of arbitrary database access is not equivalent to a normal signed-in application session. Owner credentials are kept out of the hosted application runtime. Passwords, connection strings, tokens, and private credentials are intentionally excluded from this report.
-
-## 15. Audit and Historical Records
-
-The audit ledger stores complete event envelopes and predecessor hashes. Verification recalculates hashes and checks event sequence, links, and the stored chain head. A separately retained checkpoint allows comparison with a previously trusted chain state.
-
-This produces tamper evidence, not absolute protection against an owner who can replace the database and every trusted checkpoint. Independent checkpoint retention is necessary to detect a complete privileged rewrite.
-
-Seat-capacity history records system-time ranges. It can answer what capacity was recorded at a specified timestamp; it does not model separately editable business-effective dates.
-
-## 16. API Design and Health Monitoring
-
-The deployed OpenAPI schema inspected on 13 November 2026 exposed **47 HTTP operations**. Most application routes use `/api/v1`; scheduled processing uses a separate protected backend route.
-
-| Area | Representative endpoints |
-|---|---|
-| Authentication | `POST /api/v1/auth/login`, `POST /api/v1/auth/logout`, `GET /api/v1/auth/me` |
-| Registration | `POST /api/v1/auth/register` |
-| Workspace | `GET /api/v1/workspace` |
-| Student choices and results | `PUT /api/v1/me/choices/{year}`, `GET /api/v1/me/rounds/{round_id}/why-not` |
-| Predictions and holdings | `GET /api/v1/me/predictor/{year}`, `GET /api/v1/me/holding/{year}` |
-| Administrator dashboards | `GET /api/v1/admin/overview/{year}`, `GET /api/v1/admin/dashboard/{year}` |
-| Round publication | `POST /api/v1/admin/rounds/{round_id}/publish` |
-| Simulations | `POST /api/v1/simulations`, `GET /api/v1/simulations/{sim_id}` |
-| Documents | `POST /api/v1/me/applications/{year}/documents`, `GET /api/v1/documents/{document_id}` |
-| Audit | `GET /api/v1/audit/verify`, `GET /api/v1/audit/events`, `POST /api/v1/audit/checkpoint` |
-| Spot availability | `GET /api/v1/spot/{year}` |
-| Scheduling | `POST /internal/jobs/daily` on the Render backend |
-
-### 16.1 Health endpoint
-
-`GET /api/v1/health` reports that the API process is responding:
-
-```json
-{"status":"ok","service":"admission-api"}
+```mermaid
+flowchart TD
+    A([Student registers]) --> B[Application and documents]
+    B --> C[Administrator reviews records]
+    C --> D{Application approved?}
+    D -->|No| E[Review reason shown to student]
+    D -->|Yes| F[Student ranks eligible programs]
+    F --> G[Compute allocation using configured seat pools]
+    G --> H[Administrator locks round and publishes results]
+    H --> I[Student responds]
+    I --> J[Later rounds or final admission]
+    J --> K[Spot allocation for available seats]
 ```
 
-### 16.2 Readiness endpoint
+Two records carry this process: the application and the counselling round. Each has a `status` column restricted by a CHECK constraint, and only stored functions move it from one state to the next.
 
-`GET /api/v1/ready` executes `SELECT 1` through the application's database connection and reports:
+**Figure 5. Application status**
 
-```json
-{"status":"ready","database":"postgresql"}
+```mermaid
+stateDiagram-v2
+    [*] --> DRAFT: Student starts an application
+    DRAFT --> SUBMITTED: Student submits
+    SUBMITTED --> VERIFIED: Administrator approves
+    SUBMITTED --> REJECTED: Administrator rejects with a reason
+    REJECTED --> SUBMITTED: Student corrects and resubmits
+    VERIFIED --> WITHDRAWN: Student chooses WITHDRAW
+    WITHDRAWN --> [*]
 ```
 
-Readiness therefore checks database connectivity as well as the HTTP service. It is not an exhaustive schema or workflow check: the Overview migration issue described below occurred while readiness could still succeed.
+Approval requires a verified document. Only VERIFIED applications take part in allocation.
 
-Live monitoring URLs:
+**Figure 6. Counselling round lifecycle**
 
-- [Render health](https://college-admission-api-164.onrender.com/api/v1/health)
-- [Render readiness](https://college-admission-api-164.onrender.com/api/v1/ready)
-- [Readiness through the Pages proxy](https://college-admission-164.pages.dev/api/v1/ready)
+```mermaid
+stateDiagram-v2
+    [*] --> CHOICES_OPEN: First round
+    CHOICES_OPEN --> LOCKED: Administrator locks the round
+    LOCKED --> PUBLISHED: Checked allocation is published
+    PUBLISHED --> CLOSED: Response deadline has passed
+    CLOSED --> [*]: Final admission and spot round
+    CLOSED --> LOCKED: Next round starts
+```
 
-## 17. Deployment and Operations
+Publication is refused unless the round is LOCKED and the live inputs are unchanged since the run was computed. When a round closes, students who did not respond are recorded as FREEZE.
 
-| Component | Deployment arrangement |
+### 6.1 Seat allocation
+
+The allocation engine uses deferred acceptance: applicants propose to eligible options in preference order, and each seat pool retains its highest-priority applicants within capacity. OPEN seats use common rank, while reserved pools (EWS, OBC-NCL, SC, ST) use category rank. The algorithm is written as set-based SQL inside the stored function `run_allocation()`.
+
+**Figure 7. Seat allocation logic**
+
+```mermaid
+flowchart TD
+    A[Eligible applicants, ranks, choices, and capacities] --> B[Prepare ordered proposal options]
+    B --> C[Unassigned applicants propose to next option]
+    C --> D[Each pool retains its best applicants within capacity]
+    D --> E{Rejected applicants have more options?}
+    E -->|Yes| C
+    E -->|No| F[Save assignments and unassigned outcomes]
+    F --> G[Results available for administrator publication]
+```
+
+Before a result can be published, the database verifies it: no pool exceeds its capacity, and the result is stable, meaning no applicant is left out of a program they prefer while someone with a worse rank holds a seat there. Each run also stores an explanation for every applicant, which is what lets the interface answer "why did I not get this program?".
+
+**Screen 2. Administrator Overview: the published seat plan**
+
+![Administrator Overview showing the seat plan for round 1 and the explanation for one selected seat](docs/screenshots/admin-overview.png)
+
+Each block is one seat, labelled with the rank that won it. Selecting a seat shows who holds it and why. In this example a student with common rank 7 received a better choice than a student with common rank 6, because she qualified through the OBC-NCL pool; the result reports 0 blocking pairs.
+
+| Student decision | Meaning |
 |---|---|
-| Frontend | Cloudflare Pages at `college-admission-164.pages.dev` |
-| API proxy | Repository-root Pages Functions handling `/api/*` |
-| Backend | Render at `college-admission-api-164.onrender.com` |
-| Database | Neon PostgreSQL, production branch `main`, AWS Singapore |
-| Documents | Private `admission-documents` bucket |
-| Scheduler | GitHub Actions requests the protected daily-job endpoint |
+| FREEZE | Keep the assigned seat |
+| FLOAT | Seek a more preferred program in a later round |
+| SLIDE | Seek a more preferred program within the same institute |
+| WITHDRAW | Leave the admission process |
 
-The frontend build command is `npm run build`, with output in `frontend/dist`. Render installs the Python backend and runs Uvicorn. Its configured health-check path is `/api/v1/ready`.
+**Screen 3. Student: allocation result, response, and explanation**
 
-Deployment configuration supplies the database URL, frontend origin, storage settings, proxy secret, and scheduler credentials through server-side configuration. Database owner credentials are not part of the web runtime. The solver requires a direct Neon connection because it uses temporary tables and session state.
+![Student allocation screen showing the allotted program, the four response buttons and a per-choice explanation table](docs/screenshots/student-allocation.png)
 
-The scheduled workflow targets 02:00 India time. Free-tier scheduling can be delayed, and free compute can sleep. Durable job records allow status inspection and catch-up. Actual job completion times must be read from job history rather than assumed from the configured schedule.
+## 7. DBMS Concepts Demonstrated
 
-## 18. Testing and Verification
+| Concept | Where it is used in the project |
+|---|---|
+| Composite keys | Annual applications, choices, and seat pools |
+| Referential integrity | Documents reference an application; a final admission references a seat holding |
+| CHECK and exclusion constraints | Valid marks and statuses, non-negative capacity, non-overlapping history ranges |
+| Stored functions | Allocation, publication, spot acceptance, and dashboard queries |
+| Triggers | `guard_choices` (BEFORE), `audit_change` and `history_change` (AFTER) |
+| Joins and aggregation | Applicant summaries, pool demand, and the admin Overview |
+| Window functions | Deterministic ranking of imported examination results |
+| Recursive CTE | Walking the audit hash chain and vacancy links |
+| Views and materialized views | Published allocation trace; cutoff trends for the predictor |
+| Transactions and locking | Publication, spot acceptance, scheduled jobs |
+| Access control and row-level security | A runtime role limited to EXECUTE; policies on nine student-data tables |
+| Temporal data | Seat-capacity history stored as time ranges |
 
-### 18.1 Recorded local and CI evidence
+A window function ranks students inside each category without collapsing the rows:
 
-The following results come from existing repository evidence. They are historical measurements, not newly rerun tests performed while writing this report.
+```sql
+SELECT s.full_name, a.admission_category, e.crl_rank,
+       rank() OVER (PARTITION BY a.admission_category ORDER BY e.crl_rank) AS rank_in_category
+FROM application a
+JOIN exam_result e USING (student_id, year)
+JOIN student s USING (student_id)
+WHERE a.year = 2026;
+```
+
+Each concept has a commented, runnable SQL file in [database/showcase](database/showcase/README.md). The runnable files roll back at the end, so they can be executed during the demonstration without changing the data.
+
+## 8. Transactions and Concurrency Control
+
+Transactions keep related updates together: publishing a round writes the allocation rows, the seat holdings, the round status, and an audit event, and either all of them commit or none do. Request identifiers (idempotency keys) mean a retried or double-clicked request returns the first answer instead of running twice.
+
+The clearest case is the spot round, where many students may press Accept on the last seat at the same moment. A program that reads `seats_left`, checks it, and then writes the new value has a gap between the read and the write, and every request that reads during that gap sees a free seat. The project closes the gap by doing the read, the check, and the decrement in one statement:
+
+```sql
+UPDATE admission.spot_pool
+SET    seats_left = seats_left - 1
+WHERE  pool_id = p_pool AND status = 'OPEN' AND seats_left > 0;
+
+IF NOT FOUND THEN
+  RETURN jsonb_build_object('status', 'SEAT_UNAVAILABLE');
+END IF;
+```
+
+**Figure 8. Two students, one remaining seat**
+
+```mermaid
+sequenceDiagram
+    participant A as Student A
+    participant DB as PostgreSQL
+    participant B as Student B
+
+    Note over DB: spot_pool.seats_left = 1
+    A->>DB: UPDATE ... WHERE seats_left > 0
+    Note over DB: Row locked by A, seats_left becomes 0
+    B->>DB: UPDATE ... WHERE seats_left > 0
+    Note over DB: B waits for the row lock
+    A->>DB: Insert seat_holding, COMMIT
+    DB-->>A: ACCEPTED
+    Note over DB: Lock released, B re-checks seats_left > 0
+    DB-->>B: 0 rows updated, SEAT_UNAVAILABLE
+```
+
+| Approach | Requests for one seat | Accepted | Result |
+|---|---|---|---|
+| Unsafe read-then-write (disposable test table) | 50 at once | 50 | Overbooked by 49 |
+| Project's atomic update | 500 through 50 clients | 1 | Correct; 499 refused, 0 errors |
+
+The command `npm run demo:race` repeats this comparison live in a throwaway database.
+
+## 9. Security and Audit
+
+Passwords are protected using Argon2 hashing. Sessions, CSRF protection, and role checks control access to the API. Documents remain private and are retrieved through authorized requests.
+
+Access control is also enforced inside the database. The API connects as a role that has no privileges on any table; it can only execute an approved list of functions. Each function begins with `require_role(...)` and raises an error for the wrong role, so even a faulty API route cannot read or change tables directly. Row-level security policies on nine student-data tables are a second layer for any role that is given table access.
+
+Every change to the ten main admission tables (applications, choices, results, documents, seat capacity, rounds, allocations, responses, holdings, and spot acceptances) is recorded by a trigger in an audit ledger. Each event stores the hash of the event before it, which makes tampering detectable: editing an old event changes its hash and breaks every link after it.
+
+**Figure 9. Hash-chained audit ledger**
+
+```mermaid
+flowchart LR
+    T["Trigger audit_change()<br/>on INSERT, UPDATE, DELETE"] --> E3
+    E1["Event 1<br/>hash H1"] --> E2["Event 2<br/>prev = H1<br/>hash H2"]
+    E2 --> E3["Event 3<br/>prev = H2<br/>hash H3 = SHA-256(H2 + event)"]
+    E3 --> H["Chain head<br/>last hash H3"]
+    V["verify_ledger()"] -. recomputes every hash .-> E1
+```
+
+The auditor can verify the whole chain from the interface and compare it against a checkpoint saved earlier. The same trigger mechanism keeps a time-ranged history of seat capacity, so the system can answer what a pool's capacity was at any past moment.
+
+**Screen 4. Auditor: ledger verification**
+
+![Auditor screen showing a passed ledger verification of 384 events and the current chain head hash](docs/screenshots/auditor-audit.png)
+
+## 10. Testing and Results
 
 | Check | Recorded result |
 |---|---|
-| Local database/API baseline | 38 passed on PostgreSQL 16.15 and 38 passed on PostgreSQL 18.4 |
-| Later recorded Linux/CI database/API suite | 40 passed |
+| Database and API tests | 40 passed on PostgreSQL 16; the baseline also passed on PostgreSQL 18 |
 | Frontend request tests | 6 passed |
-| Proxy tests in deployment evidence | 2 passed |
-| Browser workflows | 6 passed |
-| Production build | Passed |
-| Restore including a committed synthetic document | Table/document hashes, ledger, migrations, and runtime privileges passed |
-| Randomized add-only verification | 100 seeded scenarios of 300 students; zero violations |
-| Concurrent spot allocation | 500 requests through 50 clients; one acceptance, 499 unavailable, zero failures |
-| Concurrent analyst allocations | Three runs passed with bounded serialization retries |
+| Browser workflows (Playwright) | 6 passed |
+| Concurrent spot acceptance | 500 requests for 1 seat: 1 accepted, 0 overbooked |
+| Randomized allocation checks | 100 scenarios of 300 students: 0 violations |
+| Backup and restore | Table hashes, document hashes, audit chain, and privileges matched |
+| Large dataset (20,000 students, 240,000 choices) | All correctness checks passed; median run time 38.3 seconds |
 
-The repository has evolved beyond the earlier baseline, so these counts describe their recorded runs rather than an assertion about today's complete test-suite size.
+The large-dataset run met its correctness checks but not the original five-second target. The raw measurements and query plans are kept in the [evidence](evidence/local-verification.md) folder.
 
-### 18.2 Hosted inspection on 13 November 2026
-
-Browser inspection covered the nine administrator navigation sections, five student sections, analyst Sandbox, and auditor Audit section. Login and logout worked for all four roles. Saved simulation details, document metadata, job history, prediction displays, and audit tools were inspected.
-
-API inspection inventoried 47 operations and confirmed that all 41 protected `/api/v1` operations rejected anonymous requests. Authenticated read checks covered workspaces, dashboards, forecasts, holdings, simulations, audit events, ledger verification, seat history, documents, and CSV export. Existing demo PDF downloads matched their stored SHA-256 checksums and byte counts. Checkpoint comparison returned a matching result.
-
-For a round that had not been published, the explanation endpoint returned the expected HTTP 409 response. The student Allocation page correctly displayed the unpublished state rather than fabricated results.
-
-The inspection did not execute production registration, uploads, publication, seat edits, allocation jobs, or other admission-changing workflows. Their historical automated evidence should not be confused with a fresh production end-to-end execution.
-
-### 18.3 Schema mismatch and correction
-
-The hosted frontend and backend included the new Overview feature, but production Neon initially contained only migrations `0001` through `0018`. The missing `admin_overview(year)` function caused `GET /api/v1/admin/overview/2026` to return HTTP 503.
-
-The correction followed this sequence:
-
-1. Create a temporary Neon child branch from production.
-2. Apply existing migrations `0019_admin_overview.sql` and `0020_login_attempt_key.sql`.
-3. Verify application record counts, login-attempt primary-key integrity, migration rerun behavior, and Overview execution through the runtime role.
-4. Apply the validated migrations to production.
-5. Verify the Overview API returns HTTP 200 and the browser renders the dashboard without console warnings or errors.
-6. Recheck role-specific read APIs, audit integrity, login/logout, and readiness through both Render and Pages.
-7. Remove the temporary test branch.
-
-Production reached migration level 20. Checked application, choice, document, allocation, and user record counts were preserved. The repair required no source-code changes or application redeployment.
-
-At verification time, the Overview showed 12 verified applicants and 15 seats, with no current published allocation or qualifying live baseline. This is an expected data state: scheduled mock runs do not become the live allocation displayed by Overview.
-
-## 19. Performance Evaluation
-
-The committed large synthetic fixture contains 20,000 students, 240,000 choices, 30 programs, and 150 seat pools.
-
-| Measurement | Recorded result |
-|---|---|
-| Sequential allocation samples | 5 |
-| Median allocation time | 38,306 ms, approximately 38.3 seconds |
-| Nearest-rank p95 | 43,251 ms, approximately 43.3 seconds |
-| Original target | 5 seconds |
-| Target achieved | No |
-| Correctness checks | Capacity, stability, and applicable monotonicity passed |
-| Student workspace requests under allocation load | 922 samples |
-| Workspace latency under that local load | Median 21.835 ms; maximum 254.81 ms |
-
-Solver work and verification/persistence dominate the measured phases. Audit-chain serialization also introduces contention for concurrent operations. The p95 estimate uses only five sequential allocation samples and should be interpreted with that small sample size in mind.
-
-These are local measurements. They do not establish the latency or throughput of the free hosted deployment.
-
-## 20. Backup, Recovery, and Migration Management
-
-Migrations are applied in filename order and recorded with SHA-256 checksums. The migration runner rejects changes to already-applied files, so future schema changes require additional migrations. Web startup does not automatically migrate or reseed the database.
-
-Recovery must include both PostgreSQL records and committed private objects. A database-only backup can preserve document metadata while losing the corresponding file bytes. The recovery tooling creates a uniquely named disposable restore database, verifies table and document hashes, checks migrations, validates audit integrity, and confirms runtime privileges.
-
-Fresh-demo tooling uses an explicitly named database and preserves the active configuration unless activation is requested. Irreversible publication demonstrations should use a separate demo dataset.
-
-The hosted Overview incident also demonstrates the need for a deployment migration gate. A successful frontend build and a successful `SELECT 1` readiness check do not prove that the required database schema is deployed.
-
-## 21. Local Setup and Verification Commands
-
-Local setup requires a supported Node.js version, Python 3.11 or later, and PostgreSQL 16 or 18 binaries. The README records the exact supported Node.js versions and platform-specific discovery behavior.
-
-```powershell
-# Prepare the local demo and start the development services.
-npm run setup
-npm run dev
-```
-
-The default local frontend is `http://127.0.0.1:5173`; API documentation is available at `http://127.0.0.1:8000/docs`. The project-owned local database normally uses port 55432.
-
-Available verification commands include:
-
-```powershell
-npm run build
-npm run test:ui
-npm run test:proxy
-npm test
-npm run verify:pg16
-npm run test:e2e
-npm run backup:verify
-```
-
-Run verification against the intended local or disposable environment. Browser workflows require the local services and browser prerequisites described in the README. Backup and restore commands also require appropriate PostgreSQL client tools.
-
-## 22. Limitations and Future Enhancements
+## 11. Limitations and Future Scope
 
 | Limitation | Possible improvement |
 |---|---|
-| Large allocation runs exceed the five-second target | Profile and optimize solver, validation, persistence, and audit contention; repeat benchmarks with larger sample sizes |
-| Fixed-pool admission model | Add carefully specified policy extensions with independent correctness tests |
-| Synthetic historical predictions | Evaluate against suitable real historical data and quantify forecast quality |
-| Free compute and best-effort scheduling | Add operational alerts, measured availability targets, and dedicated capacity where required |
-| Database migration deployment gap | Introduce migration checks and a schema-aware deployment readiness gate |
-| Owner-level audit rewrite remains possible | Retain checkpoints independently and strengthen separation of administrative duties |
-| Temporal history represents system time only | Add business-effective dates if the institution requires bitemporal records |
-| Student display names are duplicated | Introduce a shared person model if profile management expands |
-| Latest hosted review avoided admission-changing flows | Add repeatable end-to-end checks against an isolated hosted test environment |
+| Allocation of 20,000 students takes about 38 seconds | Profile and optimize the solver and its verification step |
+| Fixed OPEN, EWS, OBC-NCL, SC, and ST pools only | Add horizontal reservations, supernumerary seats, and category conversion |
+| Chance bands are based on synthetic history | Evaluate against real historical cutoffs |
+| Free hosting can sleep and delay scheduled jobs | Use dedicated compute and add alerts |
+| An owner with full database access could rewrite the audit chain | Keep checkpoints in independent storage |
 
-## 23. Conclusion
+## 12. Conclusion
 
-The College Admission Management System demonstrates how a relational database can enforce a substantial admission workflow rather than act only as passive storage. PostgreSQL combines structured records, declarative constraints, stored functions, transactions, locking, simulation snapshots, temporal history, and audit verification. React and FastAPI provide role-specific access to these capabilities.
+The College Admission Management System combines a web interface with database-enforced admission rules. It organizes applications, preferences, counselling decisions, and seat assignments while demonstrating relational modeling, normalization, integrity constraints, triggers, transactions, concurrency control, and access control. Its tests show that the allocation is correct and that concurrent requests cannot overbook a seat. The project provides a practical foundation for an admission platform within its implemented fixed-pool policy.
 
-The hosted application was verified after correcting a production schema mismatch, and the administrator Overview now loads successfully. Existing evidence supports the allocation engine's correctness and guarded concurrency behavior within the implemented policy. Performance at the large synthetic scale and the limitations of free hosting remain explicit areas for improvement.
+**Application:** [college-admission-164.pages.dev](https://college-admission-164.pages.dev/)
 
-## References and Supporting Project Files
-
-This report is based on repository implementation, committed verification evidence, and the hosted inspection and migration repair performed on 13 November 2026.
-
-- [Project README](README.md)
-- [Existing concise project report](docs/project-report.md)
-- [Deployment configuration](docs/deployment.md)
-- [Demo and operating guide](docs/demo-guide.md)
-- [ER diagram](docs/er-diagram.md)
-- [Normalization and functional dependencies](docs/normalization.md)
-- [Database dictionary](docs/data-dictionary.md)
-- [Migration index](database/migrations/README.md)
-- [DBMS showcase](database/showcase/README.md)
-- [Local verification evidence](evidence/local-verification.md)
-- [Recorded deployment verification](evidence/deployment-verification.json)
-- [Scale verification data](evidence/scale-verification.json)
-- [Recovery verification data](evidence/recovery-verification.json)
-- [Render service configuration](render.yaml)
-- [Backend application and routes](backend/app/)
-- [Frontend implementation](frontend/src/)
-
-**Evidence note:** the committed deployment evidence is dated 4 November 2026 and records 18 migrations at that time. The later inspection and successful migration-level-20 repair described in this report occurred on 13 November 2026; the earlier evidence files have not been rewritten.
+**Further reading:** [full ER diagram](docs/er-diagram.md), [normalization](docs/normalization.md), [data dictionary](docs/data-dictionary.md), [DBMS showcase](database/showcase/README.md)

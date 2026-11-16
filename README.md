@@ -263,7 +263,8 @@ The performance target remains unmet. These measurements are local benchmark res
 | Document | Description |
 |---|---|
 | [Demo and Operating Guide](docs/demo-guide.md) | Demonstration workflows and operational instructions |
-| [Project Report](docs/project-report.md) | Detailed project documentation |
+| [Project Report](PROJECT_REPORT.md) · [PDF](PROJECT_REPORT.pdf) | Project report with diagrams and screenshots |
+| [Technical Summary](docs/project-report.md) | Architecture, security, and verification notes |
 | [ER Diagram](docs/er-diagram.md) | Entity relationships and database structure |
 | [Normalization](docs/normalization.md) | Database normalization documentation |
 | [Data Dictionary](docs/data-dictionary.md) | Database entities, attributes and definitions |
